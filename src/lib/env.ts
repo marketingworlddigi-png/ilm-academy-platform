@@ -4,8 +4,9 @@ import { z } from "zod";
 const serverSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.url(),
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(10),
-  SUPABASE_SECRET_KEY: z.string().min(10).optional(),
-  EXPECTED_SUPABASE_PROJECT_REF: z.string().optional(),
+  // An empty value in .env files means "not set".
+  SUPABASE_SECRET_KEY: z.preprocess((v) => (v === "" ? undefined : v), z.string().min(10).optional()),
+  EXPECTED_SUPABASE_PROJECT_REF: z.preprocess((v) => (v === "" ? undefined : v), z.string().optional()),
 });
 
 export type ServerEnv = z.infer<typeof serverSchema>;
