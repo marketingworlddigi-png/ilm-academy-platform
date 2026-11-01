@@ -2,7 +2,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { href, isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
-import { loginSchema, signupSchema } from "@/lib/auth/schemas";
+import { forgotSchema, loginSchema, resetSchema, signupSchema } from "@/lib/auth/schemas";
 
 const loc = (fd: FormData): Locale => {
   const v = String(fd.get("locale") ?? "");
@@ -34,6 +34,32 @@ export async function signup(fd: FormData) {
   });
   if (error) back(l, "/signup", error.message);
   redirect(`${href(l, "/login")}?notice=${encodeURIComponent("Check your email to confirm your account, then sign in.")}`);
+}
+
+export async function requestReset(fd: FormData) {
+  const l = loc(fd);
+  const parsed = forgotSchema.safeParse({ email: fd.get("email") });
+  if (!parsed.success) back(l, "/forgot-password", parsed.error.issues[0].message);
+  const supabase = await createClient();
+  const site = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  // The result is deliberately ignored: the answer must not reveal whether an account exists.
+  await supabase.auth.resetPasswordForEmail(parsed.data!.email, {
+    redirectTo: `${site}/auth/callback?next=${encodeURIComponent(href(l, "/reset-password"))}`,
+  });
+  redirect(`${href(l, "/forgot-password")}?notice=${encodeURIComponent("If an account exists for that address, we have sent a reset link. It expires in one hour.")}`);
+}
+
+export async function setNewPassword(fd: FormData) {
+  const l = loc(fd);
+  const parsed = resetSchema.safeParse({ password: fd.get("password"), confirm: fd.get("confirm") });
+  if (!parsed.success) back(l, "/reset-password", parsed.error.issues[0].message);
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getUser();
+  if (!data.user) back(l, "/forgot-password", "That reset link is invalid or has expired. Request a new one.");
+  const { error } = await supabase.auth.updateUser({ password: parsed.data!.password });
+  if (error) back(l, "/reset-password", /different|same/i.test(error.message) ? "Choose a password you have not used before." : "Could not update the password. Request a new reset link.");
+  await supabase.auth.signOut({ scope: "global" }); // end every session, including any an attacker may hold
+  redirect(`${href(l, "/login")}?notice=${encodeURIComponent("Password updated. Sign in with your new password.")}`);
 }
 
 export async function updateName(fd: FormData) {

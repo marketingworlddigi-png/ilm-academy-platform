@@ -13,7 +13,7 @@ export async function middleware(req: NextRequest) {
   if (isLocale(first)) {
     const res = NextResponse.next();
     // Private areas must never be indexed.
-    if (/^\/[^/]+\/(account|admin|login|signup)(\/|$)/.test(pathname)) res.headers.set("X-Robots-Tag", "noindex, nofollow");
+    if (/^\/[^/]+\/(account|admin|login|signup|forgot-password|reset-password)(\/|$)/.test(pathname)) res.headers.set("X-Robots-Tag", "noindex, nofollow");
     return refreshSession(req, res);
   }
 

@@ -7,6 +7,14 @@ export const signupSchema = z.object({
 });
 export const loginSchema = z.object({ email: z.email(), password: z.string().min(1).max(72) });
 
+export const forgotSchema = z.object({ email: z.email("Enter a valid email address") });
+export const resetSchema = z
+  .object({
+    password: z.string().min(10, "Use at least 10 characters").max(72, "Use at most 72 characters"),
+    confirm: z.string(),
+  })
+  .refine((v) => v.password === v.confirm, { message: "The two passwords do not match", path: ["confirm"] });
+
 export const boardSchema = z.object({
   slug: z.string().trim().toLowerCase().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "Slug: lowercase letters, numbers and hyphens"),
   name_en: z.string().trim().min(2).max(160),

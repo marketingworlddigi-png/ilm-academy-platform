@@ -202,3 +202,32 @@ describe("storage: direct file URLs honour the same rules", () => {
   });
 });
 
+
+describe("insert-time publishing bypass (migration 5)", () => {
+  const ins = (status: string, academy = academyA) =>
+    `insert into resources (academy_id,title,status) values ('${academy}','Bypass ${status}','${status}')`;
+  const publicCount = async () => (await rows(null, `select * from resources where title like 'Bypass%'`)).length;
+
+  it("academy staff cannot insert a resource as published, in_review or archived", async () => {
+    for (const s of ["published", "in_review", "archived"]) expect(await denied(db, ownerA, ins(s))).toBe(true);
+    expect(await publicCount()).toBe(0); // nothing leaked to the public listing
+  });
+
+  it("academy staff can still insert drafts, which stay hidden from the public", async () => {
+    expect(await denied(db, ownerA, ins("draft"))).toBe(false);
+    expect(await publicCount()).toBe(0);
+  });
+
+  it("a super admin may insert a non-draft resource", async () => {
+    expect(await denied(db, admin, `insert into resources (title,status) values ('Bypass admin','in_review')`)).toBe(false);
+  });
+
+  it("the backend (no JWT) may insert a non-draft resource", async () => {
+    await db.exec(`insert into resources (academy_id,title,status) values ('${academyA}','Bypass backend','in_review')`);
+  });
+
+  it("publishing a draft by update is still blocked without approval", async () => {
+    const id = (await db.query<{ id: string }>(`select id from resources where title='Bypass draft'`)).rows[0].id;
+    expect(await denied(db, ownerA, `update resources set status='published' where id='${id}'`)).toBe(true);
+  });
+});

@@ -29,6 +29,7 @@ export default async function LoginPage({ params, searchParams }: PageProps<"/[l
           <input className="field" id="password" name="password" type="password" autoComplete="current-password" required /></div>
         <button className="btn btn-primary w-full" type="submit">Sign in</button>
       </form>
+      <p className="mt-4 text-sm"><Link className="text-ink-soft underline" href={href(locale, "/forgot-password")}>Forgot your password?</Link></p>
       <p className="mt-6 text-sm text-ink-soft">New here? <Link className="font-semibold text-brand underline" href={href(locale, "/signup")}>Create an account</Link></p>
     </main>
   );
