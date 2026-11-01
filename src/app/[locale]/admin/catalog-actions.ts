@@ -1,23 +1,11 @@
 "use server";
-import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { defaultLocale, href, isLocale, type Locale } from "@/lib/i18n/config";
 import { boardSchema, idSchema, levelSchema, subjectSchema, uuidList } from "@/modules/catalog/schemas";
 import { catalogErrorMessage, NOT_FOUND_OR_DENIED } from "@/modules/catalog/errors";
+import { finish, localeOf, raw } from "./action-utils";
 
 // Every action uses the signed-in user's client: row-level security is the authority, so a non-admin who
 // posts to these actions directly is rejected by the database no matter what this code does.
-
-const localeOf = (fd: FormData): Locale => {
-  const v = String(fd.get("locale") ?? "");
-  return isLocale(v) ? v : defaultLocale;
-};
-const finish = (l: Locale, path: string, kind: "error" | "notice", msg: string): never => {
-  revalidatePath(href(l, path));
-  return redirect(`${href(l, path)}?${kind}=${encodeURIComponent(msg)}`);
-};
-const raw = (fd: FormData) => Object.fromEntries(fd);
 
 // ------------------------------------------------------------------ boards
 export async function createBoard(fd: FormData) {

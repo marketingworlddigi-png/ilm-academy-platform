@@ -5,6 +5,7 @@ export function catalogErrorMessage(error: { code?: string } | null | undefined,
     case "23001": // ON DELETE RESTRICT
     case "23503": // foreign key / NO ACTION
       return `This ${what} is still in use (levels, subjects or resources refer to it). Remove those first, or set it to archived instead.`;
+    case "23514": return `Could not save the ${what}: it breaks a data rule (for example, publishing needs an approved, unexpired distribution permission).`;
     case "42501": return "You do not have permission to do that.";
     default: return `Could not save the ${what}. Please try again.`;
   }
