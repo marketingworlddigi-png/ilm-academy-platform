@@ -5,13 +5,15 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
-  // Override default ignores of eslint-config-next.
+  { files: ["tests/**"], rules: { "@typescript-eslint/no-explicit-any": "off" } },
   globalIgnores([
-    // Default ignores of eslint-config-next:
     ".next/**",
     "out/**",
     "build/**",
     "next-env.d.ts",
+    ".open-next/**",
+    ".wrangler/**",
+    ".wrangler-dry/**",
   ]),
 ]);
 
