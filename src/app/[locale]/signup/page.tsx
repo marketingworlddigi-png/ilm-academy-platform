@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { href, isLocale } from "@/lib/i18n/config";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { getSessionUser } from "@/lib/auth/session";
 import { signup } from "../actions";
 
 export const dynamic = "force-dynamic";
@@ -10,6 +11,8 @@ export const metadata: Metadata = { title: "Create account", robots: { index: fa
 export default async function SignupPage({ params, searchParams }: PageProps<"/[locale]/signup">) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
+  const { user } = await getSessionUser();
+  if (user) redirect(href(locale, "/account"));
   const sp = await searchParams;
   const error = typeof sp.error === "string" ? sp.error : null;
   return (

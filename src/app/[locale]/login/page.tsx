@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { href, isLocale } from "@/lib/i18n/config";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { getSessionUser } from "@/lib/auth/session";
 import { login } from "../actions";
 
 export const dynamic = "force-dynamic";
@@ -10,6 +11,8 @@ export const metadata: Metadata = { title: "Sign in", robots: { index: false, fo
 export default async function LoginPage({ params, searchParams }: PageProps<"/[locale]/login">) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
+  const { user } = await getSessionUser();
+  if (user) redirect(href(locale, "/account"));
   const sp = await searchParams;
   const error = typeof sp.error === "string" ? sp.error : null;
   const notice = typeof sp.notice === "string" ? sp.notice : null;

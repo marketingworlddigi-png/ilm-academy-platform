@@ -36,6 +36,19 @@ export async function signup(fd: FormData) {
   redirect(`${href(l, "/login")}?notice=${encodeURIComponent("Check your email to confirm your account, then sign in.")}`);
 }
 
+export async function updateName(fd: FormData) {
+  const l = loc(fd);
+  const name = String(fd.get("fullName") ?? "").trim();
+  if (name.length < 2 || name.length > 120) back(l, "/account", "Enter your name (2 to 120 characters).");
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getUser();
+  if (!data.user) redirect(href(l, "/login"));
+  // RLS (profiles_update_own) restricts this to the caller's own row.
+  const { error } = await supabase.from("profiles").update({ full_name: name }).eq("id", data.user.id);
+  if (error) back(l, "/account", "Could not save your name.");
+  redirect(href(l, "/account"));
+}
+
 export async function signOut(fd: FormData) {
   const l = loc(fd);
   const supabase = await createClient();

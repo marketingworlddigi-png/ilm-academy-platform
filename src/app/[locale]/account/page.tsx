@@ -3,14 +3,16 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { href, isLocale } from "@/lib/i18n/config";
 import { requireUser } from "@/lib/auth/session";
-import { signOut } from "../actions";
+import { signOut, updateName } from "../actions";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "My account", robots: { index: false, follow: false } };
 
-export default async function AccountPage({ params }: PageProps<"/[locale]/account">) {
+export default async function AccountPage({ params, searchParams }: PageProps<"/[locale]/account">) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
+  const sp = await searchParams;
+  const error = typeof sp.error === "string" ? sp.error : null;
   const { supabase, user } = await requireUser(locale);
   const [{ data: profile }, { data: isAdmin }, { data: memberships }] = await Promise.all([
     supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
@@ -21,6 +23,7 @@ export default async function AccountPage({ params }: PageProps<"/[locale]/accou
     <main className="mx-auto max-w-3xl px-5 py-14">
       <h1 className="font-display text-3xl font-semibold">Welcome{profile?.full_name ? `, ${profile.full_name}` : ""}</h1>
       <p className="mt-1 text-ink-soft">{user.email}</p>
+      {error && <p role="alert" className="mt-4 rounded-lg border border-danger/40 p-3 text-sm text-danger">{error}</p>}
 
       <section className="mt-8 rounded-xl border border-line p-5">
         <h2 className="font-semibold">Your roles</h2>
@@ -33,6 +36,13 @@ export default async function AccountPage({ params }: PageProps<"/[locale]/accou
           {isAdmin !== true && (memberships ?? []).length === 0 && <li>Student (free account)</li>}
         </ul>
       </section>
+
+      <form action={updateName} className="mt-6 flex flex-wrap items-end gap-3 rounded-xl border border-line p-5">
+        <input type="hidden" name="locale" value={locale} />
+        <div className="min-w-60 flex-1"><label className="label" htmlFor="fullName">Your name</label>
+          <input className="field" id="fullName" name="fullName" defaultValue={profile?.full_name ?? ""} autoComplete="name" required minLength={2} maxLength={120} /></div>
+        <button className="btn btn-ghost" type="submit">Save</button>
+      </form>
 
       <div className="mt-8 flex flex-wrap gap-3">
         {isAdmin === true && <Link className="btn btn-primary" href={href(locale, "/admin")}>Open admin</Link>}
