@@ -14,6 +14,9 @@ All four are **additive** (CREATE only; no DROP, TRUNCATE or data deletion). The
 ## Migration 8: manual payments
 `20261102000008_manual_payments.sql` adds plans, payment methods, payments, the private `payment-proofs` bucket and the five payment functions. Additive only (no DROP). Not idempotent: run it once. Applied-check: `select to_regprocedure('public.approve_payment(uuid,text)') is not null;`
 
+## Migration 9: premium scope and ledger
+`20261103000009_ledger_and_premium_scope.sql` replaces `can_access_resource` and `approve_payment` in place (CREATE OR REPLACE, same signatures), adds the ledger tables, and posts ledger entries for any payment already approved. No DROP, no data deleted. Run it once, after migration 8.
+
 ## Safety checklist before applying (I will run through this with you)
 1. Confirm the project URL host starts with the ref in `EXPECTED_SUPABASE_PROJECT_REF` and is the new `education-platform` project.
 2. Inspect its state: it should contain no tables in `public`.

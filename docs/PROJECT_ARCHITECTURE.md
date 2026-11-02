@@ -85,7 +85,13 @@ Manual first: bank transfer, JazzCash, Easypaisa. The student submits a referenc
 - `approve_payment` is super-admin only, refuses the admin's own payment, locks the row, is idempotent (a second call returns the same entitlement), stacks renewals after the current expiry and writes an audit log row. `reject_payment` requires a reason and cannot undo an approval.
 - Proofs live in the private `payment-proofs` bucket at `<user_id>/<payment_id>/proof.<ext>`; only the owner (while pending) can upload and only the owner or a super admin can read. Admins view them through 5-minute signed URLs.
 - `can_access_resource` is unchanged: Premium access is the entitlement check, so an expired entitlement loses access automatically. Premium books also need `allow_commercial` on their permission record.
-- Not built yet: refunds (`refunded` status exists), expiry reminders, ledger entries, gateway provider.
+- Not built yet: refunds (`refunded` status exists), expiry reminders, gateway provider, ledger screens.
+
+**Premium scope and ledger (migration 9, `20261103000009_ledger_and_premium_scope.sql`).**
+- `can_access_resource`: platform Premium now opens only platform-owned premium books (`academy_id is null`). An academy's premium books need an academy-scoped or resource-scoped entitlement, so academies are paid for what they sell. The legal gate and every other rule are unchanged.
+- `ledger_accounts` and `ledger_entries`: append-only, double-entry, signed integer paisa (debit positive, credit negative). A trigger blocks UPDATE, DELETE and TRUNCATE for every role including the owner; a deferred constraint trigger refuses any transaction group that does not sum to zero; a unique index stops the same payment being posted twice. Clients have SELECT only (super admins, and later each academy's staff for that academy's accounts). Writes happen only inside SECURITY DEFINER functions.
+- `approve_payment` now calls `post_payment_ledger` in the same transaction: debit `platform:receipts`, credit `platform:subscription_revenue`. Mistakes are fixed with a correcting entry, never an edit.
+- Academy payment review (planned for the academy phase): academy_owner / academy_admin of that academy only, enforced by RLS and by the function checking the payment's academy, never by the UI.
 
 ## 8. Hosting and free-tier strategy (needs your decision)
 

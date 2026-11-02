@@ -22,7 +22,8 @@ beforeAll(async () => {
 
   resA = (await as(db, ownerA, async () =>
     (await db.query<{ id: string }>(`insert into resources (academy_id,title,access_tier) values ($1,'Sarf Notes','premium') returning id`, [academyA])).rows[0].id));
-  await db.query(`insert into entitlements (user_id,scope,scope_id,source) values ($1,'platform',null,'subscription')`, [premium]);
+  // Academy A premium books need an academy-scoped entitlement; platform Premium no longer covers them (see ledger-and-scope.test.ts).
+  await db.query(`insert into entitlements (user_id,scope,scope_id,source) values ($1,'academy',$2,'subscription')`, [premium, academyA]);
 });
 
 describe("tenant isolation", () => {
