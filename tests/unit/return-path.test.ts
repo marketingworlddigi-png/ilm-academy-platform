@@ -1,11 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { loginUrl, postLoginPath } from "@/lib/auth/return-path";
+import { loginUrl, postLoginPath, signupUrl } from "@/lib/auth/return-path";
 import { readAction } from "@/modules/library/read-action";
 
 describe("loginUrl", () => {
   it("encodes the return path", () => {
     expect(loginUrl("en-pk")).toBe("/en-pk/login");
     expect(loginUrl("en-pk", "/en-pk/books/abc/read")).toBe("/en-pk/login?next=%2Fen-pk%2Fbooks%2Fabc%2Fread");
+  });
+});
+
+describe("signupUrl", () => {
+  it("carries the return path to sign-up", () => {
+    expect(signupUrl("en-pk")).toBe("/en-pk/signup");
+    expect(signupUrl("en-pk", "/en-pk/pricing")).toBe("/en-pk/signup?next=%2Fen-pk%2Fpricing");
   });
 });
 

@@ -11,6 +11,9 @@ Files live in `supabase/migrations/` and run in filename order.
 
 All four are **additive** (CREATE only; no DROP, TRUNCATE or data deletion). They are not yet applied anywhere.
 
+## Migration 8: manual payments
+`20261102000008_manual_payments.sql` adds plans, payment methods, payments, the private `payment-proofs` bucket and the five payment functions. Additive only (no DROP). Not idempotent: run it once. Applied-check: `select to_regprocedure('public.approve_payment(uuid,text)') is not null;`
+
 ## Safety checklist before applying (I will run through this with you)
 1. Confirm the project URL host starts with the ref in `EXPECTED_SUPABASE_PROJECT_REF` and is the new `education-platform` project.
 2. Inspect its state: it should contain no tables in `public`.

@@ -8,3 +8,7 @@ export const loginUrl = (locale: Locale, next?: string): string =>
 /** Where to send someone who has just signed in. Anything that is not a same-site path falls back to the account page. */
 export const postLoginPath = (locale: Locale, next: unknown): string =>
   safeNextPath(typeof next === "string" ? next : null, href(locale, "/account"));
+
+/** Sign-up link that returns the visitor to `next` after they confirm and sign in. */
+export const signupUrl = (locale: Locale, next?: string): string =>
+  next ? `${href(locale, "/signup")}?next=${encodeURIComponent(next)}` : href(locale, "/signup");

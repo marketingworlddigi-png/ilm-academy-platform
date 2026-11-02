@@ -82,7 +82,7 @@ export default async function BookPage({ params }: PageProps<"/[locale]/books/[i
             <dt className="text-ink-soft">Access</dt><dd>{book.access_tier === "free" ? "Free" : book.access_tier}</dd>
           </dl>
           {book.info && (
-            <ReadAction resourceId={book.id} accessTier={book.access_tier} allowOnlineView={book.info.allow_online_view} readHref={href(locale, `/books/${book.id}/read`)} />
+            <ReadAction resourceId={book.id} accessTier={book.access_tier} allowOnlineView={book.info.allow_online_view} readHref={href(locale, `/books/${book.id}/read`)} pricingHref={href(locale, "/pricing")} />
           )}
           {book.info && (
             <section className="mt-8 rounded-xl border border-line p-4 text-sm">

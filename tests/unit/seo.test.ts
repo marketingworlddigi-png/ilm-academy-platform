@@ -20,13 +20,14 @@ describe("buildSitemapPaths", () => {
       expect(paths).toContain(`/${l}/library/wifaq/aalimiyyah/fiqh`);
       expect(paths).toContain(`/${l}/books/b1`);
     }
-    expect(paths).toHaveLength(6);
+    expect(paths).toContain(`/en-pk/pricing`);
+    expect(paths).toHaveLength(7);
   });
   it("does not list untranslated languages", () => {
     expect(paths.some((p) => p.startsWith("/ur-pk") || p.startsWith("/ar"))).toBe(false);
   });
   it("never includes account, admin, auth or reader pages", () => {
-    expect(paths.some((p) => /\/(account|admin|login|signup|forgot-password|reset-password)|\/read$/.test(p))).toBe(false);
+    expect(paths.some((p) => /\/(account|admin|login|signup|forgot-password|reset-password|checkout)|\/read$/.test(p))).toBe(false);
   });
   it("carries lastModified for boards and books", () => {
     expect(buildSitemapPaths(src).find((e) => e.path === "/en-pk/books/b1")?.lastModified).toBe("2026-02-01T00:00:00Z");
@@ -37,7 +38,7 @@ describe("robots", () => {
   it("blocks account, admin, login, signup and the reader, and points at the sitemap", () => {
     const r = robots();
     const rule = Array.isArray(r.rules) ? r.rules[0] : r.rules;
-    for (const p of ["/*/account", "/*/admin", "/*/login", "/*/signup", "/*/books/*/read"]) expect(rule.disallow).toContain(p);
+    for (const p of ["/*/account", "/*/admin", "/*/login", "/*/signup", "/*/books/*/read", "/*/checkout"]) expect(rule.disallow).toContain(p);
     expect(DISALLOWED_PATHS).toContain("/auth/");
     expect(String(r.sitemap)).toMatch(/\/sitemap\.xml$/);
   });

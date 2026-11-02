@@ -4,13 +4,13 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { readAction } from "@/modules/library/read-action";
 
-type Props = { resourceId: string; accessTier: string; allowOnlineView: boolean; readHref: string };
+type Props = { resourceId: string; accessTier: string; allowOnlineView: boolean; readHref: string; pricingHref?: string };
 
 /**
  * The book page itself is public and cached, so the per-visitor part runs in the browser: for non-free books it asks the
  * database (can_access_resource) whether this signed-in user may view. The reader page re-checks on the server regardless.
  */
-export function ReadAction({ resourceId, accessTier, allowOnlineView, readHref }: Props) {
+export function ReadAction({ resourceId, accessTier, allowOnlineView, readHref, pricingHref }: Props) {
   const needsCheck = allowOnlineView && accessTier !== "free";
   const [canView, setCanView] = useState<boolean | null>(null);
   const [checked, setChecked] = useState(!needsCheck);
@@ -36,6 +36,7 @@ export function ReadAction({ resourceId, accessTier, allowOnlineView, readHref }
         <span className="inline-block rounded-full border border-accent px-3 py-1 text-sm font-semibold text-accent">
           {accessTier === "academy" ? "Academy members" : "Premium"}
         </span>
+        {accessTier !== "academy" && pricingHref && <Link className="ms-3 text-sm font-semibold text-brand underline" href={pricingHref}>See plans</Link>}
       </p>
     );
   }

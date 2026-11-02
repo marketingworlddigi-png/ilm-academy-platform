@@ -77,6 +77,16 @@ Key invariants (enforced in the database, not only app code):
 
 Manual first: bank transfer, JazzCash, Easypaisa. The student submits a reference and proof, and an authorized admin reviews it. The status machine is `pending → submitted → under_review → approved | rejected`, plus `refunded | cancelled | expired`. A `PaymentProvider` interface is defined now so gateways and signed webhooks can be added later. No card data is ever stored.
 
+**As built (migration 8, `20261102000008_manual_payments.sql`).** Tables `plans`, `payment_methods`, `payments`; `entitlements.payment_id` (unique, so one payment can only ever create one entitlement). Plans and methods ship inactive and empty; an admin fills in real prices and account details before anything is offered.
+
+- Prices come from `plans` inside `create_payment`; the client never sends an amount. The plan name, months and price are copied onto the payment so later price edits do not rewrite history.
+- Clients can only SELECT their own payments. Every write goes through a SECURITY DEFINER function: `create_payment`, `submit_payment`, `claim_payment_review`, `approve_payment`, `reject_payment`.
+- Duplicate transaction IDs are refused (normalised: case, spaces and dashes ignored) by a partial unique index over submitted, under-review, approved and refunded payments. A rejected payment frees its ID.
+- `approve_payment` is super-admin only, refuses the admin's own payment, locks the row, is idempotent (a second call returns the same entitlement), stacks renewals after the current expiry and writes an audit log row. `reject_payment` requires a reason and cannot undo an approval.
+- Proofs live in the private `payment-proofs` bucket at `<user_id>/<payment_id>/proof.<ext>`; only the owner (while pending) can upload and only the owner or a super admin can read. Admins view them through 5-minute signed URLs.
+- `can_access_resource` is unchanged: Premium access is the entitlement check, so an expired entitlement loses access automatically. Premium books also need `allow_commercial` on their permission record.
+- Not built yet: refunds (`refunded` status exists), expiry reminders, ledger entries, gateway provider.
+
 ## 8. Hosting and free-tier strategy (needs your decision)
 
 Figures below come from search results. Several are third-party and conflict, so confirm them on the official pages before launch.

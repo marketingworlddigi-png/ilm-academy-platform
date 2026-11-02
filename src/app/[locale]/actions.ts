@@ -25,17 +25,18 @@ export async function login(fd: FormData) {
 
 export async function signup(fd: FormData) {
   const l = loc(fd);
+  const next = fd.get("next") ? postLoginPath(l, fd.get("next")) : undefined;
   const parsed = signupSchema.safeParse({ fullName: fd.get("fullName"), email: fd.get("email"), password: fd.get("password") });
-  if (!parsed.success) back(l, "/signup", parsed.error.issues[0].message);
+  if (!parsed.success) back(l, "/signup", parsed.error.issues[0].message, next);
   const { fullName, email, password } = parsed.data!;
   const supabase = await createClient();
   const site = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   const { error } = await supabase.auth.signUp({
     email, password,
-    options: { data: { full_name: fullName }, emailRedirectTo: `${site}/auth/callback?next=${encodeURIComponent(href(l, "/account"))}` },
+    options: { data: { full_name: fullName }, emailRedirectTo: `${site}/auth/callback?next=${encodeURIComponent(postLoginPath(l, next))}` },
   });
-  if (error) back(l, "/signup", error.message);
-  redirect(`${href(l, "/login")}?notice=${encodeURIComponent("Check your email to confirm your account, then sign in.")}`);
+  if (error) back(l, "/signup", error.message, next);
+  redirect(`${href(l, "/login")}?notice=${encodeURIComponent("Check your email to confirm your account, then sign in.")}${next ? `&next=${encodeURIComponent(next)}` : ""}`);
 }
 
 export async function requestReset(fd: FormData) {

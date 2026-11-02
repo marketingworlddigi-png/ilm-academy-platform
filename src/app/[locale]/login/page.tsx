@@ -4,7 +4,7 @@ import { href, isLocale } from "@/lib/i18n/config";
 import { notFound, redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/session";
 import { login } from "../actions";
-import { postLoginPath } from "@/lib/auth/return-path";
+import { postLoginPath, signupUrl } from "@/lib/auth/return-path";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Sign in", robots: { index: false, follow: false } };
@@ -33,7 +33,7 @@ export default async function LoginPage({ params, searchParams }: PageProps<"/[l
         <button className="btn btn-primary w-full" type="submit">Sign in</button>
       </form>
       <p className="mt-4 text-sm"><Link className="text-ink-soft underline" href={href(locale, "/forgot-password")}>Forgot your password?</Link></p>
-      <p className="mt-6 text-sm text-ink-soft">New here? <Link className="font-semibold text-brand underline" href={href(locale, "/signup")}>Create an account</Link></p>
+      <p className="mt-6 text-sm text-ink-soft">New here? <Link className="font-semibold text-brand underline" href={signupUrl(locale, next)}>Create an account</Link></p>
     </main>
   );
 }
