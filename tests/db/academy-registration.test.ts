@@ -99,3 +99,56 @@ describe("platform review", () => {
     expect((await row(id)).status).toBe("suspended");
   });
 });
+
+describe("resubmit for review", () => {
+  let id: string;
+  beforeAll(async () => {
+    id = await register(await newUser(db, "resub-owner").then((u) => (resubOwner = u)), "Resubmit Academy", "resubmit-academy");
+  });
+  let resubOwner: string;
+
+  it("is refused while pending is not applicable: pending is a no-op, active cannot resubmit", async () => {
+    await q(resubOwner, `select resubmit_academy($1)`, [id]); // already pending: idempotent
+    expect((await row(id)).status).toBe("pending");
+    await q(admin, `select review_academy($1,'active',null)`, [id]);
+    expect(await failure(resubOwner, `select resubmit_academy($1)`, [id])).toMatch(/sent back or not approved/);
+  });
+
+  it("an owner can resubmit after needs_info or rejection; the note stays and it is audited", async () => {
+    await q(admin, `select review_academy($1,'needs_info','Add your teachers')`, [id]);
+    await q(resubOwner, `select resubmit_academy($1)`, [id]);
+    expect(await row(id)).toMatchObject({ status: "pending", status_note: "Add your teachers" });
+    await q(admin, `select review_academy($1,'rejected','Incomplete')`, [id]);
+    await q(resubOwner, `select resubmit_academy($1)`, [id]);
+    expect((await row(id)).status).toBe("pending");
+    expect((await db.query(`select 1 from audit_logs where action='academy.resubmitted' and entity_id=$1`, [id])).rows).toHaveLength(2);
+  });
+
+  it("a suspended academy cannot be resubmitted", async () => {
+    await q(admin, `select review_academy($1,'suspended','Investigating')`, [id]);
+    expect(await failure(resubOwner, `select resubmit_academy($1)`, [id])).toMatch(/sent back or not approved/);
+  });
+
+  it("strangers and academy admins who are not the owner cannot resubmit; ids are not revealed", async () => {
+    await q(admin, `select review_academy($1,'needs_info','More detail please')`, [id]);
+    const helper = await newUser(db, "resub-helper");
+    await db.query(`insert into memberships (academy_id,user_id,role) values ($1,$2,'academy_admin')`, [id, helper]);
+    expect(await failure(other, `select resubmit_academy($1)`, [id])).toMatch(/not found/);
+    expect(await failure(helper, `select resubmit_academy($1)`, [id])).toMatch(/not found/);
+    expect(await failure(other, `select resubmit_academy(gen_random_uuid())`)).toMatch(/not found/);
+    expect(await failure(null, `select resubmit_academy($1)`, [id])).toMatch(/permission denied/);
+  });
+
+  it("the status still cannot be changed directly by the owner, even toward pending", async () => {
+    expect(await failure(resubOwner, `update academies set status='pending' where id=$1`, [id])).toMatch(/platform administrator/);
+    expect(await failure(resubOwner, `update academies set status='active' where id=$1`, [id])).toMatch(/platform administrator/);
+  });
+
+  it("the three-academy cap applies to resubmission", async () => {
+    const o = await newUser(db, "capowner");
+    const rejected = await register(o, "Cap One", "cap-one");
+    await q(admin, `select review_academy($1,'rejected','Not enough detail')`, [rejected]);
+    await register(o, "Cap Two", "cap-two"); await register(o, "Cap Three", "cap-three"); await register(o, "Cap Four", "cap-four");
+    expect(await failure(o, `select resubmit_academy($1)`, [rejected])).toMatch(/maximum/);
+  });
+});

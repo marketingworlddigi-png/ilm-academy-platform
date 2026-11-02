@@ -5,7 +5,7 @@ import { href, isLocale } from "@/lib/i18n/config";
 import { requireUser } from "@/lib/auth/session";
 import { ACADEMY_STATUS_LABEL } from "@/modules/academies/schemas";
 import { Card, Flash, flashFrom } from "@/components/admin/ui";
-import { updateAcademyProfile } from "../../academy-actions";
+import { resubmitAcademy, updateAcademyProfile } from "../../academy-actions";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Academy dashboard", robots: { index: false, follow: false } };
@@ -30,6 +30,8 @@ export default async function AcademyDashboard({ params, searchParams }: PagePro
   ]);
   const count = (role: string) => (members ?? []).filter((m) => m.role === role).length;
   const live = academy.status === "active";
+  const isOwner = mine.some((m) => m.role === "academy_owner");
+  const canResubmit = isOwner && (academy.status === "needs_info" || academy.status === "rejected");
 
   return (
     <main className="mx-auto max-w-4xl px-5 py-12">
@@ -46,6 +48,13 @@ export default async function AcademyDashboard({ params, searchParams }: PagePro
           {academy.status === "suspended" && "Your academy is suspended. Its content is hidden from students."}
           {academy.status_note && <span className="mt-2 block"><strong>Note from the reviewer:</strong> {academy.status_note}</span>}
         </p>
+      )}
+      {canResubmit && (
+        <form action={resubmitAcademy} className="mt-4">
+          <input type="hidden" name="locale" value={locale} /><input type="hidden" name="id" value={academy.id} />
+          <p className="mb-2 text-sm text-ink-soft">Update the details below, then send it back for review.</p>
+          <button className="btn btn-primary" type="submit">Resubmit for review</button>
+        </form>
       )}
 
       <div className="mt-8 grid gap-4 sm:grid-cols-4">

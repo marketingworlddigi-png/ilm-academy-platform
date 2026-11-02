@@ -19,6 +19,18 @@ export async function registerAcademy(fd: FormData) {
   return finish(l, row ? `/academy/${row.slug}` : "/academy", "notice", "Thank you. Your academy is waiting for review. We will update its status here.");
 }
 
+export async function resubmitAcademy(fd: FormData) {
+  const l = localeOf(fd);
+  const { supabase } = await requireUser(l);
+  const id = idSchema.safeParse(fd.get("id"));
+  if (!id.success) return finish(l, "/academy", "error", NOT_FOUND_OR_DENIED);
+  const { data: current } = await supabase.from("academies").select("slug").eq("id", id.data).maybeSingle();
+  const back = current ? `/academy/${current.slug}` : "/academy";
+  const { error } = await supabase.rpc("resubmit_academy", { p_academy: id.data });
+  if (error) return finish(l, back, "error", academyErrorMessage(error));
+  return finish(l, back, "notice", "Sent for review again. We will update the status here.");
+}
+
 export async function updateAcademyProfile(fd: FormData) {
   const l = localeOf(fd);
   const { supabase } = await requireUser(l);

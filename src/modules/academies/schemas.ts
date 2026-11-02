@@ -37,6 +37,7 @@ export function academyErrorMessage(error: { code?: string; message?: string } |
   switch (error?.code) {
     case "23505": return "That web address is already taken. Try another.";
     case "22023": case "53400": return error.message ?? "Check the form and try again.";
+    case "55000": return "Only an academy that was sent back or not approved can be resubmitted.";
     case "42501": return "You are not allowed to do that.";
     case "P0002": return "That academy no longer exists.";
     default: return "Something went wrong. Please try again.";
