@@ -83,3 +83,17 @@ describe("uploads: replacement policies", () => {
     expect((await q(admin, `select cover_path from resources where id=$1`, [res]))[0].cover_path).toBe(`${res}/cover.jpg`);
   });
 });
+
+describe("public_resource_info", () => {
+  it("is empty for a draft and exposes only attribution + grants once listed", async () => {
+    const r = (await q(admin, `insert into resources (title,access_tier) values ('Info test','free') returning id`))[0].id;
+    expect(await q(null, `select * from public_resource_info($1)`, [r])).toHaveLength(0);
+    await q(admin, `update copyright_permissions set permission_status='approved', license_type='open_license', evidence_reference='CC BY', attribution_text='Courtesy of X', allow_online_view=true where resource_id=$1`, [r]);
+    expect(await q(null, `select * from public_resource_info($1)`, [r])).toHaveLength(0); // still draft
+    await q(admin, `update resources set status='published' where id=$1`, [r]);
+    const rows = await q(null, `select * from public_resource_info($1)`, [r]);
+    expect(rows).toEqual([{ attribution_text: "Courtesy of X", license_type: "open_license", allow_online_view: true, allow_download: false }]);
+    await q(admin, `update copyright_permissions set permission_status='removed' where resource_id=$1`, [r]);
+    expect(await q(null, `select * from public_resource_info($1)`, [r])).toHaveLength(0);
+  });
+});

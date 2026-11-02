@@ -10,6 +10,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
         <Link href={href(locale)} className="font-display text-xl font-semibold text-brand">Ilm Academy</Link>
         <nav aria-label="Primary" className="flex items-center gap-5 text-sm">
+          <Link href={href(locale, "/library")} className="font-medium text-ink-soft hover:text-ink">Library</Link>
           <ul className="hidden items-center gap-5 sm:flex">
             {locales.map((l) => (
               <li key={l}>
