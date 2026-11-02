@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { href, isLocale } from "@/lib/i18n/config";
+import { alternatesFor } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/site";
 import { createPublicClient } from "@/lib/supabase/public";
 import { getBoard, getLevel, getSubjectBySlug, listBooks, listSubjectsForLevel, nameFor } from "@/modules/library/queries";
@@ -28,7 +29,7 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/library/
   return {
     title: `${nameFor(subject, locale)} books: ${nameFor(level, locale)}, ${nameFor(board, locale)}`,
     description: `Books and notes for ${subject.name_en} at ${level.name_en} (${board.name_en}).`,
-    alternates: { canonical: href(locale, `/library/${board.slug}/${level.slug}/${subject.slug}`) },
+    alternates: alternatesFor(locale, `/library/${board.slug}/${level.slug}/${subject.slug}`),
   };
 }
 

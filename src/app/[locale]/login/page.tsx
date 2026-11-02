@@ -4,6 +4,7 @@ import { href, isLocale } from "@/lib/i18n/config";
 import { notFound, redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/session";
 import { login } from "../actions";
+import { postLoginPath } from "@/lib/auth/return-path";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Sign in", robots: { index: false, follow: false } };
@@ -12,8 +13,9 @@ export default async function LoginPage({ params, searchParams }: PageProps<"/[l
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const { user } = await getSessionUser();
-  if (user) redirect(href(locale, "/account"));
   const sp = await searchParams;
+  const next = typeof sp.next === "string" ? postLoginPath(locale, sp.next) : undefined; // validated: same-site paths only
+  if (user) redirect(next ?? href(locale, "/account"));
   const error = typeof sp.error === "string" ? sp.error : null;
   const notice = typeof sp.notice === "string" ? sp.notice : null;
   return (
@@ -23,6 +25,7 @@ export default async function LoginPage({ params, searchParams }: PageProps<"/[l
       {error && <p role="alert" className="mt-4 rounded-lg border border-danger/40 p-3 text-sm text-danger">{error}</p>}
       <form action={login} className="mt-6 space-y-4">
         <input type="hidden" name="locale" value={locale} />
+        {next && <input type="hidden" name="next" value={next} />}
         <div><label className="label" htmlFor="email">Email</label>
           <input className="field" id="email" name="email" type="email" autoComplete="email" required /></div>
         <div><label className="label" htmlFor="password">Password</label>

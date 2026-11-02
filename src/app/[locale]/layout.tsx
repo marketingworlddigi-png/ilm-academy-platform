@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter, Newsreader, Noto_Naskh_Arabic } from "next/font/google";
 import { notFound } from "next/navigation";
 import { dirOf, htmlLangOf, isLocale, locales } from "@/lib/i18n/config";
+import { robotsForLocale } from "@/lib/seo";
+import { siteUrl } from "@/lib/site";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import "../globals.css";
@@ -12,10 +14,17 @@ const arabic = Noto_Naskh_Arabic({ subsets: ["arabic"], variable: "--font-arabic
 
 export const generateStaticParams = () => locales.map((locale) => ({ locale }));
 
-export const metadata: Metadata = {
-  title: { default: "Ilm Academy Platform", template: "%s | Ilm Academy Platform" },
-  description: "Multi-academy education marketplace and LMS.",
-};
+// metadataBase makes every relative URL in page metadata (canonicals, Open Graph images) resolve to the real domain.
+// Robots is per language: pages not yet translated are noindex,follow. Pages may override (e.g. not-found).
+export async function generateMetadata({ params }: LayoutProps<"/[locale]">): Promise<Metadata> {
+  const { locale } = await params;
+  return {
+    metadataBase: new URL(siteUrl()),
+    title: { default: "Ilm Academy Platform", template: "%s | Ilm Academy Platform" },
+    description: "Multi-academy education marketplace and LMS.",
+    ...(isLocale(locale) ? { robots: robotsForLocale(locale) } : {}),
+  };
+}
 
 export default async function LocaleLayout({ children, params }: LayoutProps<"/[locale]">) {
   const { locale } = await params;

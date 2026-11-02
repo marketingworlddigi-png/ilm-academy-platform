@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { href, isLocale } from "@/lib/i18n/config";
+import { alternatesFor } from "@/lib/seo";
 import { createPublicClient } from "@/lib/supabase/public";
 import { nameFor, listBoards } from "@/modules/library/queries";
 import { Breadcrumbs } from "@/components/breadcrumbs";
@@ -14,7 +15,7 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/library"
   return {
     title: "Library: books and notes by board, level and subject",
     description: "Browse books and study notes organised by board, level and subject. Every resource is listed only after its distribution permission has been verified.",
-    alternates: { canonical: href(locale, "/library") },
+    alternates: alternatesFor(locale, "/library"),
   };
 }
 

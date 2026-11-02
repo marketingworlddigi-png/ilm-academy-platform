@@ -1,6 +1,13 @@
 import Link from "next/link";
 import { href, isLocale } from "@/lib/i18n/config";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { alternatesFor } from "@/lib/seo";
+
+export async function generateMetadata({ params }: PageProps<"/[locale]">): Promise<Metadata> {
+  const { locale } = await params;
+  return isLocale(locale) ? { alternates: alternatesFor(locale, "/") } : {};
+}
 
 // English copy only for now: Urdu and Arabic text will be added from human-reviewed translations, not machine output.
 export default async function Home({ params }: PageProps<"/[locale]">) {

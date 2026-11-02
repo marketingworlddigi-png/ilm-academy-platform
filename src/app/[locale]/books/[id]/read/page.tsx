@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { href, isLocale } from "@/lib/i18n/config";
 import { idSchema } from "@/modules/catalog/schemas";
+import { loginUrl } from "@/lib/auth/return-path";
 import { getSessionUser } from "@/lib/auth/session";
 import { getProtectedFileUrl } from "@/modules/library/file-access";
 import { PdfReader } from "@/components/pdf-reader-lazy";
@@ -25,7 +26,7 @@ export default async function ReadPage({ params }: PageProps<"/[locale]/books/[i
       <Notice title={book.title} back={back}>
         <p>Sign in to read this book online. A free account is enough for free books.</p>
         <p className="mt-4 flex gap-3">
-          <Link className="btn btn-primary" href={href(locale, "/login")}>Sign in</Link>
+          <Link className="btn btn-primary" href={loginUrl(locale, href(locale, `/books/${id}/read`))}>Sign in</Link>
           <Link className="btn btn-ghost" href={href(locale, "/signup")}>Create account</Link>
         </p>
       </Notice>

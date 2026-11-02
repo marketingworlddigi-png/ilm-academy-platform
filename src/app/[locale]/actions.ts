@@ -2,23 +2,25 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { href, isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
+import { postLoginPath } from "@/lib/auth/return-path";
 import { forgotSchema, loginSchema, resetSchema, signupSchema } from "@/lib/auth/schemas";
 
 const loc = (fd: FormData): Locale => {
   const v = String(fd.get("locale") ?? "");
   return isLocale(v) ? v : defaultLocale;
 };
-const back = (l: Locale, page: string, error: string): never =>
-  redirect(`${href(l, page)}?error=${encodeURIComponent(error)}`);
+const back = (l: Locale, page: string, error: string, next?: string): never =>
+  redirect(`${href(l, page)}?error=${encodeURIComponent(error)}${next ? `&next=${encodeURIComponent(next)}` : ""}`);
 
 export async function login(fd: FormData) {
   const l = loc(fd);
   const parsed = loginSchema.safeParse({ email: fd.get("email"), password: fd.get("password") });
-  if (!parsed.success) back(l, "/login", "Enter your email and password.");
+  const next = fd.get("next") ? postLoginPath(l, fd.get("next")) : undefined;
+  if (!parsed.success) back(l, "/login", "Enter your email and password.", next);
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data!);
-  if (error) back(l, "/login", error.message.includes("not confirmed") ? "Please confirm your email first." : "Incorrect email or password.");
-  redirect(href(l, "/account"));
+  if (error) back(l, "/login", error.message.includes("not confirmed") ? "Please confirm your email first." : "Incorrect email or password.", next);
+  redirect(postLoginPath(l, next));
 }
 
 export async function signup(fd: FormData) {

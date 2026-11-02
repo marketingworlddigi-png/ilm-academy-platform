@@ -11,8 +11,8 @@ const src = {
 
 describe("buildSitemapPaths", () => {
   const paths = buildSitemapPaths(src).map((e) => e.path);
-  it("lists every public page once per language", () => {
-    for (const l of ["en-pk", "ur-pk", "ar"]) {
+  it("lists every public page once per translated language (en-pk only until translations ship)", () => {
+    for (const l of ["en-pk"]) {
       expect(paths).toContain(`/${l}`);
       expect(paths).toContain(`/${l}/library`);
       expect(paths).toContain(`/${l}/library/wifaq`);
@@ -20,7 +20,10 @@ describe("buildSitemapPaths", () => {
       expect(paths).toContain(`/${l}/library/wifaq/aalimiyyah/fiqh`);
       expect(paths).toContain(`/${l}/books/b1`);
     }
-    expect(paths).toHaveLength(18);
+    expect(paths).toHaveLength(6);
+  });
+  it("does not list untranslated languages", () => {
+    expect(paths.some((p) => p.startsWith("/ur-pk") || p.startsWith("/ar"))).toBe(false);
   });
   it("never includes account, admin, auth or reader pages", () => {
     expect(paths.some((p) => /\/(account|admin|login|signup|forgot-password|reset-password)|\/read$/.test(p))).toBe(false);

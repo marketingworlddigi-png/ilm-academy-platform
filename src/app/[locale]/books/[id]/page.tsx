@@ -1,13 +1,14 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { href, isLocale } from "@/lib/i18n/config";
+import { alternatesFor } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/site";
 import { idSchema } from "@/modules/catalog/schemas";
 import { createPublicClient } from "@/lib/supabase/public";
 import { getBook, nameFor } from "@/modules/library/queries";
 import { coverPublicUrl } from "@/modules/library/urls";
 import { Breadcrumbs, type Crumb } from "@/components/breadcrumbs";
+import { ReadAction } from "@/components/read-action";
 import { JsonLd } from "@/components/json-ld";
 
 export const revalidate = 300;
@@ -33,7 +34,7 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/books/[i
   return {
     title: book.author ? `${title} by ${book.author}` : title,
     description,
-    alternates: { canonical: path },
+    alternates: alternatesFor(locale, `/books/${book.id}`),
     openGraph: { type: "book", title, description, url: absoluteUrl(path), ...(cover ? { images: [{ url: cover }] } : {}) },
   };
 }
@@ -80,8 +81,8 @@ export default async function BookPage({ params }: PageProps<"/[locale]/books/[i
             {facts.filter(([, v]) => v).map(([k, v]) => (<div key={k} className="contents"><dt className="text-ink-soft">{k}</dt><dd>{v}</dd></div>))}
             <dt className="text-ink-soft">Access</dt><dd>{book.access_tier === "free" ? "Free" : book.access_tier}</dd>
           </dl>
-          {book.info?.allow_online_view && (
-            <p className="mt-6"><Link className="btn btn-primary" href={href(locale, `/books/${book.id}/read`)}>Read online</Link></p>
+          {book.info && (
+            <ReadAction resourceId={book.id} accessTier={book.access_tier} allowOnlineView={book.info.allow_online_view} readHref={href(locale, `/books/${book.id}/read`)} />
           )}
           {book.info && (
             <section className="mt-8 rounded-xl border border-line p-4 text-sm">
