@@ -53,14 +53,15 @@ export async function listBooks(db: SupabaseClient, filter: { levelId: string; s
 }
 
 export async function getBook(db: SupabaseClient, id: string) {
-  const { data } = await db.from("resources").select(BOOK_COLUMNS).eq("id", id).eq("status", "published").maybeSingle();
-  if (!data) return null;
+  const { data: row } = await db.from("resources").select(`${BOOK_COLUMNS}, official_source_url, storage_path`).eq("id", id).eq("status", "published").maybeSingle();
+  if (!row) return null;
+  const { storage_path, ...data } = row; // the storage path is never sent to the page, only whether a file exists
   const [{ data: info }, board, level, subject] = await Promise.all([
     db.rpc("public_resource_info", { p_resource: id }),
     data.board_id ? db.from("boards").select("slug, name_en, name_ur, name_ar").eq("id", data.board_id).maybeSingle() : null,
     data.level_id ? db.from("levels").select("slug, name_en, name_ur, name_ar").eq("id", data.level_id).maybeSingle() : null,
     data.subject_id ? db.from("subjects").select("slug, name_en, name_ur, name_ar").eq("id", data.subject_id).maybeSingle() : null,
   ]);
-  return { ...data, info: (info as { attribution_text: string | null; license_type: string; allow_online_view: boolean; allow_download: boolean }[] | null)?.[0] ?? null,
+  return { ...data, has_file: !!storage_path, info: (info as { attribution_text: string | null; license_type: string; allow_online_view: boolean; allow_download: boolean }[] | null)?.[0] ?? null,
     board: board?.data ?? null, level: level?.data ?? null, subject: subject?.data ?? null };
 }

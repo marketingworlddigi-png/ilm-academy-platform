@@ -31,6 +31,8 @@ export function ResourceFields({ resource: r, boards, levels, links }: {
       <Field label="Edition" name="edition" defaultValue={r?.edition} />
       <Field label="Language" name="language" defaultValue={r?.language} placeholder="e.g. Arabic, Urdu" />
       <Field label="Publication year" name="publication_year" type="number" defaultValue={r?.publication_year} hint="Gregorian year" />
+      <Field label="Official website link" name="official_source_url" type="url" defaultValue={r?.official_source_url as string | null} className="sm:col-span-2"
+        placeholder="https://" hint="Optional. Shown as a Read on official website button when this site has no file to read." />
       <Select label="Type" name="kind" value={str(r?.kind) ?? "book"}>{RESOURCE_KINDS.map((k) => <option key={k} value={k}>{k}</option>)}</Select>
       <Select label="Access tier" name="access_tier" value={str(r?.access_tier) ?? "free"}>{ACCESS_TIERS.map((t) => <option key={t} value={t}>{t}</option>)}</Select>
       <Select label="Board" name="board_id" value={r?.board_id as string | null}>

@@ -23,7 +23,7 @@ All four are **additive** (CREATE only; no DROP, TRUNCATE or data deletion). The
 ## Migration 11: resubmit for review
 `20261104000011_resubmit_academy.sql` adds `resubmit_academy(uuid)` (owner only; needs_info or rejected back to pending; same 3-academy cap; audited) and replaces `academies_guard` in place so only that function can make the transition, through a transaction-local flag. No DROP, no data deleted.
 
-## Is it applied? Check query (migrations 5 to 11)
+## Is it applied? Check query (migrations 5 to 13)
 Run in the Supabase SQL editor. Every column must be `true`:
 ```sql
 select
@@ -36,9 +36,18 @@ select
   to_regclass('public.ledger_entries') is not null
     and to_regprocedure('public.post_payment_ledger(uuid,uuid)') is not null                                   as m9_ledger,
   to_regprocedure('public.review_academy(uuid,academy_status,text)') is not null                               as m10_academy_review,
-  to_regprocedure('public.resubmit_academy(uuid)') is not null                                                 as m11_resubmit;
+  to_regprocedure('public.resubmit_academy(uuid)') is not null                                                 as m11_resubmit,
+  to_regprocedure('public.enroll_in_course(uuid)') is not null
+    and to_regclass('public.lessons') is not null                                                               as m12_courses,
+  exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'resources' and column_name = 'official_source_url') as m13_official_source_url;
 ```
 Add one clause per new migration.
+
+## Migration 12: courses
+`20261104000012_courses.sql` adds courses, modules, lessons and enrollments with row-level security, `course_outline`, `enroll_in_course` and `leave_course`. Courses are public only while published and their academy is active; lesson text is readable only by that academy's owner/admin, super admins, enrolled users, and for lessons marked as a free preview. Enrollment rows are written only through the two functions. No DROP, no data deleted.
+
+## Migration 13: official website link
+`20261105000013_official_source_url.sql` adds one nullable column, `resources.official_source_url` (absolute http or https links only, enforced by a check constraint). The book page shows "Read on official website" when it is set and the site has no readable file. No DROP, no data deleted.
 
 ## Safety checklist before applying (I will run through this with you)
 1. Confirm the project URL host starts with the ref in `EXPECTED_SUPABASE_PROJECT_REF` and is the new `education-platform` project.

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { HeaderAuth } from "./header-auth";
 import { href, locales, type Locale } from "@/lib/i18n/config";
 
 const LANG_LABEL: Record<Locale, string> = { "en-pk": "English", "ur-pk": "اردو", ar: "العربية" };
@@ -11,6 +12,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
         <Link href={href(locale)} className="font-display text-xl font-semibold text-brand">Ilm Academy</Link>
         <nav aria-label="Primary" className="flex items-center gap-5 text-sm">
           <Link href={href(locale, "/library")} className="font-medium text-ink-soft hover:text-ink">Library</Link>
+          <Link href={href(locale, "/courses")} className="font-medium text-ink-soft hover:text-ink">Courses</Link>
           <Link href={href(locale, "/pricing")} className="font-medium text-ink-soft hover:text-ink">Pricing</Link>
           <ul className="hidden items-center gap-5 sm:flex">
             {locales.map((l) => (
@@ -20,8 +22,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
               </li>
             ))}
           </ul>
-          <Link href={href(locale, "/login")} className="btn btn-ghost">Sign in</Link>
-          <Link href={href(locale, "/signup")} className="btn btn-primary">Create account</Link>
+          <HeaderAuth locale={locale} accountHref={href(locale, "/account")} loginHref={href(locale, "/login")} signupHref={href(locale, "/signup")} />
         </nav>
       </div>
     </header>

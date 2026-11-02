@@ -84,6 +84,12 @@ export default async function BookPage({ params }: PageProps<"/[locale]/books/[i
           {book.info && (
             <ReadAction resourceId={book.id} accessTier={book.access_tier} allowOnlineView={book.info.allow_online_view} readHref={href(locale, `/books/${book.id}/read`)} pricingHref={href(locale, "/pricing")} />
           )}
+          {book.official_source_url && !(book.has_file && book.info?.allow_online_view) && (
+            <p className="mt-6">
+              <a className="btn btn-primary" href={book.official_source_url} target="_blank" rel="noopener noreferrer nofollow">Read on official website</a>
+              <span className="mt-2 block text-xs text-ink-soft">Opens the publisher&apos;s own site in a new tab.</span>
+            </p>
+          )}
           {book.info && (
             <section className="mt-8 rounded-xl border border-line p-4 text-sm">
               <h2 className="font-semibold">Licence</h2>

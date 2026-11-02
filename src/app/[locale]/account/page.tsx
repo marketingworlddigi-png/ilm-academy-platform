@@ -28,8 +28,6 @@ export default async function AccountPage({ params, searchParams }: PageProps<"/
       <section className="mt-8 rounded-xl border border-line p-5">
         <h2 className="font-semibold">Your roles</h2>
         <ul className="mt-2 list-disc ps-5 text-sm text-ink-soft">
-          <Link className="btn btn-ghost" href={href(locale, "/account/payments")}>My payments</Link>
-        <Link className="btn btn-ghost" href={href(locale, "/academy")}>My academies</Link>
         {isAdmin === true && <li>Platform administrator</li>}
           {(memberships ?? []).map((m, i) => (
             <li key={i}>{m.role.replace("_", " ")} ({m.status}){/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
@@ -48,6 +46,8 @@ export default async function AccountPage({ params, searchParams }: PageProps<"/
 
       <div className="mt-8 flex flex-wrap gap-3">
         {isAdmin === true && <Link className="btn btn-primary" href={href(locale, "/admin")}>Open admin</Link>}
+        <Link className="btn btn-ghost" href={href(locale, "/account/payments")}>My payments</Link>
+        <Link className="btn btn-ghost" href={href(locale, "/academy")}>My academies</Link>
         <form action={signOut}>
           <input type="hidden" name="locale" value={locale} />
           <button className="btn btn-ghost" type="submit">Sign out</button>

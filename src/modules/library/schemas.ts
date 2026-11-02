@@ -11,12 +11,17 @@ export const ACCESS_TIERS = ["free", "premium", "academy"] as const;
 export const LICENSE_TYPES = ["original_work", "explicit_permission", "public_domain", "open_license", "commercial_license", "unknown"] as const;
 export const PERMISSION_STATUSES = ["not_reviewed", "pending_verification", "permission_requested", "approved", "rejected", "expired", "restricted", "removed"] as const;
 
+/** Only absolute http(s) links; mirrors the check constraint in migration 13. */
+export const officialUrl = z.string().trim().max(500, "Keep the link under 500 characters").optional().transform((v) => v || null)
+  .refine((v) => v === null || /^https?:\/\/[^\s/]+[^\s]*$/i.test(v), "Enter a full web address starting with https://");
+
 export const resourceSchema = z.object({
   title: z.string().trim().min(2, "Enter a title").max(300),
   title_ur: optText(300), title_ar: optText(300),
   author: optText(200), publisher: optText(200), edition: optText(100), language: optText(40),
   publication_year: optYear,
   description: optText(5000),
+  official_source_url: officialUrl,
   kind: z.enum(RESOURCE_KINDS),
   access_tier: z.enum(ACCESS_TIERS),
   board_id: optId, level_id: optId, subject_id: optId,
