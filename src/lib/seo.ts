@@ -22,7 +22,7 @@ export function alternatesFor(locale: Locale, path: string) {
 
 /** Private or per-user areas: kept out of search results (robots.txt here, X-Robots-Tag in the middleware). */
 export const DISALLOWED_PATHS = [
-  ...["account", "admin", "login", "signup", "forgot-password", "reset-password", "checkout"].map((p) => `/*/${p}`),
+  ...["account", "admin", "login", "signup", "forgot-password", "reset-password", "checkout", "academy"].map((p) => `/*/${p}`),
   "/*/books/*/read",
   "/auth/",
   "/api/",

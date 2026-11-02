@@ -17,6 +17,9 @@ All four are **additive** (CREATE only; no DROP, TRUNCATE or data deletion). The
 ## Migration 9: premium scope and ledger
 `20261103000009_ledger_and_premium_scope.sql` replaces `can_access_resource` and `approve_payment` in place (CREATE OR REPLACE, same signatures), adds the ledger tables, and posts ledger entries for any payment already approved. No DROP, no data deleted. Run it once, after migration 8.
 
+## Migration 10: academy registration
+`20261103000010_academy_registration.sql` adds `academies.status_note`, replaces `register_academy` (validation, reserved addresses, at most 3 academies in review or active per person, audit row) and `academies_guard` (staff can no longer change status, owner, slug or the reviewer note) in place, and adds `review_academy` (super admin only, note required unless approving, audited). No DROP, no data deleted. Run once, after migration 9.
+
 ## Safety checklist before applying (I will run through this with you)
 1. Confirm the project URL host starts with the ref in `EXPECTED_SUPABASE_PROJECT_REF` and is the new `education-platform` project.
 2. Inspect its state: it should contain no tables in `public`.
