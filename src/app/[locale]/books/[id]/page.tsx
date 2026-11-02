@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { href, isLocale } from "@/lib/i18n/config";
@@ -79,6 +80,9 @@ export default async function BookPage({ params }: PageProps<"/[locale]/books/[i
             {facts.filter(([, v]) => v).map(([k, v]) => (<div key={k} className="contents"><dt className="text-ink-soft">{k}</dt><dd>{v}</dd></div>))}
             <dt className="text-ink-soft">Access</dt><dd>{book.access_tier === "free" ? "Free" : book.access_tier}</dd>
           </dl>
+          {book.info?.allow_online_view && (
+            <p className="mt-6"><Link className="btn btn-primary" href={href(locale, `/books/${book.id}/read`)}>Read online</Link></p>
+          )}
           {book.info && (
             <section className="mt-8 rounded-xl border border-line p-4 text-sm">
               <h2 className="font-semibold">Licence</h2>
