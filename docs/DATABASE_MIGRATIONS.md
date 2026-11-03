@@ -23,7 +23,7 @@ All four are **additive** (CREATE only; no DROP, TRUNCATE or data deletion). The
 ## Migration 11: resubmit for review
 `20261104000011_resubmit_academy.sql` adds `resubmit_academy(uuid)` (owner only; needs_info or rejected back to pending; same 3-academy cap; audited) and replaces `academies_guard` in place so only that function can make the transition, through a transaction-local flag. No DROP, no data deleted.
 
-## Is it applied? Check query (migrations 5 to 14)
+## Is it applied? Check query (migrations 5 to 15)
 Run in the Supabase SQL editor. Every column must be `true`:
 ```sql
 select
@@ -41,7 +41,9 @@ select
     and to_regclass('public.lessons') is not null                                                               as m12_courses,
   exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'resources' and column_name = 'official_source_url') as m13_official_source_url,
   to_regprocedure('public.plan_purchase_preview(uuid,uuid,integer)') is not null
-    and to_regprocedure('public.platform_period_start(uuid)') is not null                                       as m14_plan_purchase_rules;
+    and to_regprocedure('public.platform_period_start(uuid)') is not null                                       as m14_plan_purchase_rules,
+  to_regprocedure('public.complete_lesson(uuid)') is not null
+    and to_regclass('public.academy_invites') is not null                                                       as m15_teachers_progress;
 ```
 Add one clause per new migration.
 
@@ -57,6 +59,12 @@ Add one clause per new migration.
 - A different plan can be bought any time and starts when the current Premium ends.
 - A submitted or under-review payment blocks new ones. An unpaid payment for the same plan is reused; an unpaid one for another plan is cancelled (audited as `payment.cancelled`).
 - Dates on the pricing, checkout and admin screens come from `plan_purchase_preview`, which uses the same start-date function as `approve_payment`.
+
+## Migration 15: teachers, invitations, lesson progress
+`20261106000015_teachers_and_progress.sql` is additive; it replaces five course-content policies (courses_read, modules_read/write, lessons_read/write, enrollments_read) so teachers (membership role `instructor`) can work in their own academy. No data is touched.
+- Teachers: create and edit modules and lessons, see draft courses and the roster of their own academy. They cannot create, publish or archive courses, edit the academy, or manage members.
+- Invitations: `invite_to_academy` (owner or admin invite teachers; only the owner invites admins) returns a single-use link token once; only its SHA-256 is stored. `accept_invite` joins the signed-in user with the invited role. Email is not sent by the platform yet, so the inviter shares the link. Anyone holding the link can accept it until it is used, revoked, replaced or 14 days old.
+- Progress: `record_lesson_position`, `complete_lesson` (returns the next lesson) and `course_progress`. Clients can only read their own rows; teachers read their academy's.
 
 ## Safety checklist before applying (I will run through this with you)
 1. Confirm the project URL host starts with the ref in `EXPECTED_SUPABASE_PROJECT_REF` and is the new `education-platform` project.
