@@ -197,23 +197,24 @@ describe("approval", () => {
   it("an approved payment cannot be rejected, and a rejected one cannot be approved", async () => {
     const approved = (await db.query<{ id: string }>(`select id from payments where reference_norm='APPROVETWICE1'`)).rows[0].id;
     expect(await failure(admin, `select reject_payment($1,'changed my mind')`, [approved])).toMatch(/Only a submitted/);
-    const id = await submitted(student, "REJECT-FIRST-01");
+    const payer = await newUser(db, "reject-first");
+    const id = await submitted(payer, "REJECT-FIRST-01");
     await q(admin, `select reject_payment($1,'blurry screenshot')`, [id]);
     await q(admin, `select reject_payment($1,'blurry screenshot')`, [id]); // idempotent
     expect(await failure(admin, `select approve_payment($1)`, [id])).toMatch(/Only a submitted/);
     expect(await entitlementsFor(id)).toHaveLength(0);
-    const row = (await q(student, `select status, review_note from payments where id=$1`, [id]))[0];
+    const row = (await q(payer, `select status, review_note from payments where id=$1`, [id]))[0];
     expect(row).toMatchObject({ status: "rejected", review_note: "blurry screenshot" });
   });
 
   it("rejecting needs a reason", async () => {
-    const id = await submitted(other, "NEEDS-REASON-1");
+    const id = await submitted(await newUser(db, "needs-reason"), "NEEDS-REASON-1");
     expect(await failure(admin, `select reject_payment($1,'')`, [id])).toMatch(/reason/);
     await q(admin, `select reject_payment($1,'test cleanup')`, [id]);
   });
 
   it("a payment can be taken for review first, and then approved", async () => {
-    const id = await submitted(other, "REVIEW-FIRST-01");
+    const id = await submitted(await newUser(db, "review-first"), "REVIEW-FIRST-01");
     expect(await failure(student, `select claim_payment_review($1)`, [id])).toMatch(/Not allowed/);
     await q(admin, `select claim_payment_review($1)`, [id]);
     await q(admin, `select claim_payment_review($1)`, [id]); // idempotent
@@ -239,6 +240,8 @@ describe("premium access follows the entitlement", () => {
     const buyer = await newUser(db, "renewer");
     const one = await submitted(buyer, "RENEW-ONE-0001");
     await q(admin, `select approve_payment($1)`, [one]);
+    // the renewal window opens 7 days before the end
+    await db.query(`update entitlements set expires_at=now() + interval '3 days' where payment_id=$1`, [one]);
     const two = await submitted(buyer, "RENEW-TWO-0001");
     await q(admin, `select approve_payment($1)`, [two]);
     const [a] = await entitlementsFor(one);

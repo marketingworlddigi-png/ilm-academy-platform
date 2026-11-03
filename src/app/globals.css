@@ -36,6 +36,7 @@ html[dir="rtl"] body { font-family: var(--font-arabic), var(--font-sans); line-h
 .btn-primary { background: var(--brand); color: var(--brand-ink); }
 .btn-primary:hover { background: #0b3a2d; }
 .btn-ghost { border: 1px solid var(--line); background: transparent; color: var(--ink); }
+.btn:disabled { opacity: .55; cursor: not-allowed; }
 .btn-ghost:hover { border-color: var(--ink-soft); }
 .field { width: 100%; border: 1px solid var(--line); background: #fff; border-radius: .5rem; padding: .65rem .8rem; font-size: 1rem; }
 .field:focus { border-color: var(--brand); outline: none; box-shadow: 0 0 0 3px rgba(15,74,58,.15); }

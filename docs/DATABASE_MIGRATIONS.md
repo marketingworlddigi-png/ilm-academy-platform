@@ -23,7 +23,7 @@ All four are **additive** (CREATE only; no DROP, TRUNCATE or data deletion). The
 ## Migration 11: resubmit for review
 `20261104000011_resubmit_academy.sql` adds `resubmit_academy(uuid)` (owner only; needs_info or rejected back to pending; same 3-academy cap; audited) and replaces `academies_guard` in place so only that function can make the transition, through a transaction-local flag. No DROP, no data deleted.
 
-## Is it applied? Check query (migrations 5 to 13)
+## Is it applied? Check query (migrations 5 to 14)
 Run in the Supabase SQL editor. Every column must be `true`:
 ```sql
 select
@@ -39,7 +39,9 @@ select
   to_regprocedure('public.resubmit_academy(uuid)') is not null                                                 as m11_resubmit,
   to_regprocedure('public.enroll_in_course(uuid)') is not null
     and to_regclass('public.lessons') is not null                                                               as m12_courses,
-  exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'resources' and column_name = 'official_source_url') as m13_official_source_url;
+  exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'resources' and column_name = 'official_source_url') as m13_official_source_url,
+  to_regprocedure('public.plan_purchase_preview(uuid,uuid,integer)') is not null
+    and to_regprocedure('public.platform_period_start(uuid)') is not null                                       as m14_plan_purchase_rules;
 ```
 Add one clause per new migration.
 
@@ -48,6 +50,13 @@ Add one clause per new migration.
 
 ## Migration 13: official website link
 `20261105000013_official_source_url.sql` adds one nullable column, `resources.official_source_url` (absolute http or https links only, enforced by a check constraint). The book page shows "Read on official website" when it is set and the site has no readable file. No DROP, no data deleted.
+
+## Migration 14: plan purchase rules
+`20261105000014_plan_purchase_rules.sql` adds `platform_period_start` and `plan_purchase_preview`, and replaces `create_payment` and `approve_payment` in place (same signatures, grants kept). No table changes, nothing dropped. The plan behind a Premium period is read through `entitlements.payment_id` to `payments.plan_id`.
+- Same plan cannot be bought again until the last 7 days before it ends (the end of the latest period of that plan, so stacked periods count).
+- A different plan can be bought any time and starts when the current Premium ends.
+- A submitted or under-review payment blocks new ones. An unpaid payment for the same plan is reused; an unpaid one for another plan is cancelled (audited as `payment.cancelled`).
+- Dates on the pricing, checkout and admin screens come from `plan_purchase_preview`, which uses the same start-date function as `approve_payment`.
 
 ## Safety checklist before applying (I will run through this with you)
 1. Confirm the project URL host starts with the ref in `EXPECTED_SUPABASE_PROJECT_REF` and is the new `education-platform` project.

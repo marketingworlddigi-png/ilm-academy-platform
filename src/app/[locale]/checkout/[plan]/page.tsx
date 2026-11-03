@@ -6,6 +6,7 @@ import { getSessionUser } from "@/lib/auth/session";
 import { loginUrl, signupUrl } from "@/lib/auth/return-path";
 import { listActiveMethods } from "@/modules/payments/queries";
 import { formatPkr, periodLabel } from "@/modules/payments/format";
+import { formatDay, type PurchasePreview } from "@/modules/payments/purchase";
 import { Flash, flashFrom } from "@/components/admin/ui";
 import { startCheckout } from "../../payment-actions";
 
@@ -35,6 +36,8 @@ export default async function CheckoutPage({ params, searchParams }: PageProps<"
   ]);
   if (!plan) redirect(href(locale, "/pricing"));
   const { error, notice } = flashFrom(await searchParams);
+  const { data: pvRows } = await supabase.rpc("plan_purchase_preview", { p_user: user.id, p_plan: plan.id });
+  const pv = (Array.isArray(pvRows) ? pvRows[0] : pvRows) as PurchasePreview | undefined;
 
   return (
     <main className="mx-auto max-w-2xl px-5 py-12">
@@ -42,6 +45,21 @@ export default async function CheckoutPage({ params, searchParams }: PageProps<"
       <h1 className="mt-2 font-display text-3xl font-semibold">{plan.name}</h1>
       <p className="mt-1 text-2xl font-semibold">{formatPkr(plan.price_paisa)} <span className="text-base font-normal text-ink-soft">{periodLabel(plan.duration_months)}</span></p>
       <Flash error={error} notice={notice} />
+      {pv && (
+        <div className="mt-6 rounded-xl border border-line p-4 text-sm">
+          {pv.blocked && pv.same_plan_ends_at && pv.renew_from ? (
+            <p>You already have {plan.name} until <strong>{formatDay(pv.same_plan_ends_at)}</strong>. You can renew it from <strong>{formatDay(pv.renew_from)}</strong>.</p>
+          ) : (<>
+            <p>This purchase covers <strong>{formatDay(pv.period_starts_at)}</strong> to <strong>{formatDay(pv.period_ends_at)}</strong>.</p>
+            <p className="mt-1 text-ink-soft">
+              {pv.current_plan_name && pv.current_ends_at
+                ? `You have ${pv.current_plan_name} until ${formatDay(pv.current_ends_at)}. The new period starts when it ends, so you don't lose any days.`
+                : "It starts when the payment is approved."}
+              {" "}Dates follow Pakistan time and are confirmed when the payment is approved.
+            </p>
+          </>)}
+        </div>
+      )}
 
       {methods.length === 0 ? (
         <p className="mt-8 rounded-xl border border-line p-6 text-ink-soft">Payments are not open yet. Please check back soon.</p>
@@ -68,7 +86,7 @@ export default async function CheckoutPage({ params, searchParams }: PageProps<"
             </div>
           </fieldset>
           <p className="text-sm text-ink-soft">Next you will get a payment code to quote, and a form for your transaction ID and receipt.</p>
-          <button className="btn btn-primary" type="submit">Continue</button>
+          <button className="btn btn-primary" type="submit" disabled={pv?.blocked}>Continue</button>
         </form>
       )}
     </main>

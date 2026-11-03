@@ -6,6 +6,7 @@ import { alternatesFor } from "@/lib/seo";
 import { createPublicClient } from "@/lib/supabase/public";
 import { listActivePlans } from "@/modules/payments/queries";
 import { formatPkr, periodLabel } from "@/modules/payments/format";
+import { PlanAction } from "@/components/plan-action";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 
 export const revalidate = 300;
@@ -43,7 +44,7 @@ export default async function PricingPage({ params }: PageProps<"/[locale]/prici
               <h2 className="font-display text-xl font-semibold">{p.name}</h2>
               <p className="mt-3 text-3xl font-semibold">{formatPkr(p.price_paisa)} <span className="text-base font-normal text-ink-soft">{periodLabel(p.duration_months)}</span></p>
               {p.description && <p className="mt-3 text-sm text-ink-soft">{p.description}</p>}
-              <Link className="btn btn-primary mt-6 self-start" href={href(locale, `/checkout/${p.code}`)}>Choose {p.name}</Link>
+              <PlanAction plan={{ id: p.id, name: p.name, duration_months: p.duration_months }} checkoutHref={href(locale, `/checkout/${p.code}`)} />
             </li>
           ))}
         </ul>

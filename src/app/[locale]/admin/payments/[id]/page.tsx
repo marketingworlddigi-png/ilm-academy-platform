@@ -5,6 +5,7 @@ import { href, isLocale } from "@/lib/i18n/config";
 import { requireSuperAdmin } from "@/lib/auth/session";
 import { idSchema } from "@/modules/catalog/schemas";
 import { formatPkr, statusLabel } from "@/modules/payments/format";
+import { formatDay, type PurchasePreview } from "@/modules/payments/purchase";
 import { PROOF_BUCKET, isImageProof } from "@/modules/payments/proofs";
 import { Card, Flash, flashFrom } from "@/components/admin/ui";
 import { approvePayment, claimPaymentReview, rejectPayment } from "../../payment-actions";
@@ -29,6 +30,13 @@ export default async function PaymentReview({ params, searchParams }: PageProps<
     supabase.from("audit_logs").select("id, action, actor_id, details, created_at").eq("entity_type", "payment").eq("entity_id", p.id).order("id"),
     supabase.from("payments").select("id").eq("user_id", p.user_id).neq("id", p.id).eq("status", "approved"),
   ]);
+  const reviewablePayment = p.status === "submitted" || p.status === "under_review";
+  // Approved: the period actually granted. Waiting: what approval would grant, from the same database function approval uses.
+  const [{ data: pvRows }, { data: granted }] = await Promise.all([
+    reviewablePayment ? supabase.rpc("plan_purchase_preview", { p_user: p.user_id, p_plan: p.plan_id, p_months: p.duration_months }) : Promise.resolve({ data: null }),
+    p.status === "approved" ? supabase.from("entitlements").select("starts_at, expires_at").eq("payment_id", p.id).maybeSingle() : Promise.resolve({ data: null }),
+  ]);
+  const pv = (Array.isArray(pvRows) ? pvRows[0] : pvRows) as PurchasePreview | undefined;
   const proofUrl = signed?.signedUrl ?? null;
   const own = p.user_id === user.id;
   const reviewable = p.status === "submitted" || p.status === "under_review";
@@ -48,6 +56,9 @@ export default async function PaymentReview({ params, searchParams }: PageProps<
             <div><dt className="text-ink-soft">Transaction ID (as typed)</dt><dd className="font-mono">{p.reference ?? "Not submitted yet"}</dd></div>
             <div><dt className="text-ink-soft">Submitted</dt><dd>{when(p.submitted_at) || "Not yet"}</dd></div>
             {p.payer_note && <div><dt className="text-ink-soft">Payer note</dt><dd>{p.payer_note}</dd></div>}
+            {pv && <div><dt className="text-ink-soft">Payer&apos;s current plan</dt><dd>{pv.current_plan_name && pv.current_ends_at ? `${pv.current_plan_name}, until ${formatDay(pv.current_ends_at)}` : "No active plan"}</dd></div>}
+            {pv && <div><dt className="text-ink-soft">If approved now, the new period covers</dt><dd>{formatDay(pv.period_starts_at)} to {formatDay(pv.period_ends_at)}</dd></div>}
+            {granted && <div><dt className="text-ink-soft">Period granted</dt><dd>{formatDay(granted.starts_at)} to {formatDay(granted.expires_at as string)}</dd></div>}
             {(others?.length ?? 0) > 0 && <div><dt className="text-ink-soft">Earlier approved payments by this payer</dt><dd>{others?.length}</dd></div>}
             {p.review_note && <div><dt className="text-ink-soft">Review note</dt><dd>{p.review_note}</dd></div>}
           </dl>
