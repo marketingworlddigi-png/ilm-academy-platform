@@ -8,11 +8,12 @@ export const revalidate = 3600;
 // Anonymous client: row-level security returns only published boards/subjects and books with a valid permission.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const db = createPublicClient();
-  const [boards, levels, links, books] = await Promise.all([
+  const [boards, levels, links, books, courses] = await Promise.all([
     db.from("boards").select("id, slug, updated_at").eq("status", "published"),
     db.from("levels").select("id, slug, board_id"),
     db.from("level_subjects").select("level_id, subjects!inner(slug, status)"),
     db.from("resources").select("id, updated_at").eq("status", "published").order("updated_at", { ascending: false }).limit(5000),
+    db.from("courses").select("slug, updated_at, academies!inner(slug)").eq("status", "published").is("deleted_at", null).limit(5000),
   ]);
   const boardSlug = new Map((boards.data ?? []).map((b) => [b.id, b.slug]));
   const levelById = new Map((levels.data ?? []).filter((l) => boardSlug.has(l.board_id)).map((l) => [l.id, { slug: l.slug, board_slug: boardSlug.get(l.board_id)! }]));
@@ -26,6 +27,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         .map((s) => ({ board_slug: level!.board_slug, level_slug: level!.slug, subject_slug: s.slug }));
     }),
     books: books.data ?? [],
+    courses: (courses.data ?? []).flatMap((c) => { const a = [c.academies].flat()[0]; return a ? [{ academy_slug: a.slug, slug: c.slug, updated_at: c.updated_at }] : []; }),
   });
   return entries.map((e) => ({ url: absoluteUrl(e.path), lastModified: e.lastModified }));
 }

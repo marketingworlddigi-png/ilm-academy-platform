@@ -21,7 +21,8 @@ describe("buildSitemapPaths", () => {
       expect(paths).toContain(`/${l}/books/b1`);
     }
     expect(paths).toContain(`/en-pk/pricing`);
-    expect(paths).toHaveLength(7);
+    expect(paths).toContain(`/en-pk/courses`);
+    expect(paths).toHaveLength(8);
   });
   it("does not list untranslated languages", () => {
     expect(paths.some((p) => p.startsWith("/ur-pk") || p.startsWith("/ar"))).toBe(false);

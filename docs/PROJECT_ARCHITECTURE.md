@@ -164,3 +164,11 @@ Follow the brief's Phases 2–9. Each phase ends with tests, a docs update and a
 1. Hosting: Cloudflare Workers (OpenNext), VPS, or something else?
 2. Is a Supabase project already created? If not, I will use local Supabase (needs Docker) for migrations and tests.
 3. Which content do you already hold distribution rights for?
+
+## 13. Courses (slice 1, migration 12)
+- Tables: `courses` (per academy, slug unique per academy), `course_modules`, `lessons` (plain text body, optional linked library book, free-preview flag), `enrollments`.
+- Visibility is enforced in row-level security, not in the pages: a course and its modules are public only while the course is published and its academy is active. Lesson text is readable by that academy's owner/admin, super admins, enrolled users, and for free-preview lessons. `course_outline()` exposes lesson titles only, so the syllabus can be public without the content.
+- Rules in triggers: a new course starts as a draft; publishing needs an active academy and at least one lesson; a published course keeps at least one lesson and its web address; a lesson can link a platform book or its own academy's book, never another academy's.
+- Enrollment is free and goes only through `enroll_in_course` / `leave_course` (idempotent; the academy can remove a student, which is final from the student's side).
+- Pages: public `/courses`, `/courses/[academy]/[course]`, members-only `/courses/[academy]/[course]/lessons/[id]` (noindex, in robots.txt); staff manage under `/academy/[slug]/courses`.
+- Not in slice 1: paid courses, lesson progress, instructors authoring (staff are owner/admin only), inviting students, reordering by drag.
