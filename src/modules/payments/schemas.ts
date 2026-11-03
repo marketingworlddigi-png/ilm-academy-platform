@@ -13,6 +13,12 @@ export const submitSchema = z.object({
   note: optText(500),
 });
 
+export const OWN_CODE_MESSAGE = "This is your payment code. Enter the transaction ID from your JazzCash/Easypaisa SMS or bank receipt.";
+
+/** The payment code is ours, shown to the payer to quote in the transfer; it is not proof of payment. Case-insensitive. */
+export const isOwnPaymentCode = (reference: string, paymentCode: string): boolean =>
+  reference.trim().toLowerCase() === paymentCode.trim().toLowerCase();
+
 export const rejectSchema = z.object({ reason: z.string().trim().min(3, "Give a short reason so the payer knows what to fix").max(500, "Keep the reason under 500 characters") });
 export const approveSchema = z.object({ note: optText(500) });
 

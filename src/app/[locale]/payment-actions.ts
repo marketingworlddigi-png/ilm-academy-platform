@@ -7,7 +7,7 @@ import { idSchema } from "@/modules/catalog/schemas";
 import { paymentErrorMessage } from "@/modules/payments/errors";
 import { ManualPaymentProvider, PaymentError } from "@/modules/payments/provider";
 import { isExpectedProofPath } from "@/modules/payments/proofs";
-import { checkoutSchema, submitSchema } from "@/modules/payments/schemas";
+import { checkoutSchema, isOwnPaymentCode, OWN_CODE_MESSAGE, submitSchema } from "@/modules/payments/schemas";
 import { finish, localeOf, raw } from "./admin/action-utils";
 
 const PLAN_CODE = /^[a-z0-9-]{2,40}$/;
@@ -40,6 +40,8 @@ export async function submitPaymentProof(fd: FormData) {
   const detail = `/account/payments/${id.data}`;
   const parsed = submitSchema.safeParse(raw(fd));
   if (!parsed.success) return finish(l, detail, "error", parsed.error.issues[0]?.message ?? "Check the form and try again.");
+  const { data: own } = await supabase.from("payments").select("code").eq("id", id.data).maybeSingle();
+  if (own && isOwnPaymentCode(parsed.data.reference, own.code)) return finish(l, detail, "error", OWN_CODE_MESSAGE);
   const path = String(fd.get("path") ?? "");
   if (!isExpectedProofPath(user.id, id.data, path)) return finish(l, detail, "error", "Upload a screenshot or receipt of your payment.");
   const { error } = await supabase.rpc("submit_payment", {

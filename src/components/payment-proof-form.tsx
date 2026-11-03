@@ -1,12 +1,13 @@
 "use client";
 import { useRef, useState, useTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { isOwnPaymentCode, OWN_CODE_MESSAGE } from "@/modules/payments/schemas";
 import { PROOF_BUCKET, PROOF_MAX_BYTES, PROOF_MIMES, proofObjectName } from "@/modules/payments/proofs";
 
-type Props = { paymentId: string; userId: string; locale: string; action: (fd: FormData) => Promise<void> };
+type Props = { paymentId: string; paymentCode: string; userId: string; locale: string; action: (fd: FormData) => Promise<void> };
 
 /** Uploads the proof straight to the private bucket from the browser (Workers have little memory), then submits the form. */
-export function PaymentProofForm({ paymentId, userId, locale, action }: Props) {
+export function PaymentProofForm({ paymentId, paymentCode, userId, locale, action }: Props) {
   const file = useRef<HTMLInputElement>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -16,6 +17,7 @@ export function PaymentProofForm({ paymentId, userId, locale, action }: Props) {
     const form = e.currentTarget;
     const f = file.current?.files?.[0];
     setMsg(null);
+    if (isOwnPaymentCode(String(new FormData(form).get("reference") ?? ""), paymentCode)) return setMsg(OWN_CODE_MESSAGE);
     if (!f) return setMsg("Choose a screenshot or receipt of your payment.");
     if (f.size > PROOF_MAX_BYTES) return setMsg("That file is too large. The limit is 5 MB.");
     const name = proofObjectName(userId, paymentId, f.type);
@@ -35,7 +37,10 @@ export function PaymentProofForm({ paymentId, userId, locale, action }: Props) {
       <div>
         <label className="label" htmlFor="reference">Transaction ID</label>
         <input className="field" id="reference" name="reference" required minLength={6} maxLength={64} autoComplete="off" />
-        <p className="mt-1 text-xs text-ink-soft">Exactly as shown on your receipt or SMS.</p>
+        <p className="mt-1 text-xs text-ink-soft">
+          Find it in the confirmation SMS from JazzCash or Easypaisa (sometimes called TID or Trx ID), or on your bank transfer receipt (sometimes called reference or STAN number).
+          This is not the payment code ({paymentCode}) shown above; that one is ours.
+        </p>
       </div>
       <div>
         <label className="label" htmlFor="proof">Screenshot or receipt</label>

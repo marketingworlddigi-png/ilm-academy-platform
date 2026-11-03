@@ -47,7 +47,7 @@ export default async function PaymentPage({ params, searchParams }: PageProps<"/
           </Card>
           <Card title="2. Send us the proof" className="mt-6">
             <p className="text-sm text-ink-soft">Once you have paid, enter the transaction ID and upload a screenshot of the receipt.</p>
-            <PaymentProofForm paymentId={p.id} userId={user.id} locale={locale} action={submitPaymentProof} />
+            <PaymentProofForm paymentId={p.id} paymentCode={p.code} userId={user.id} locale={locale} action={submitPaymentProof} />
           </Card>
         </>
       )}

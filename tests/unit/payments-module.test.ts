@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { formatPkr, periodLabel, statusLabel } from "@/modules/payments/format";
 import { isExpectedProofPath, isImageProof, proofObjectName } from "@/modules/payments/proofs";
 import { paymentErrorMessage } from "@/modules/payments/errors";
-import { checkoutSchema, methodSchema, planSchema, rejectSchema, submitSchema } from "@/modules/payments/schemas";
+import { checkoutSchema, isOwnPaymentCode, methodSchema, OWN_CODE_MESSAGE, planSchema, rejectSchema, submitSchema } from "@/modules/payments/schemas";
 
 describe("formatPkr", () => {
   it("formats whole rupees with grouping", () => {
@@ -93,5 +93,20 @@ describe("payment schemas", () => {
     expect(methodSchema.safeParse({ is_active: "on" }).success).toBe(false);
     expect(methodSchema.safeParse({ is_active: "on", account_number: "0300", instructions: "Send to this wallet" }).success).toBe(true);
     expect(methodSchema.safeParse({}).success).toBe(true);
+  });
+});
+
+describe("payment code is not a transaction ID", () => {
+  it("matches the payment's own code regardless of case or spacing", () => {
+    expect(isOwnPaymentCode("ILM-1A2B3C4D", "ILM-1A2B3C4D")).toBe(true);
+    expect(isOwnPaymentCode("ilm-1a2b3c4d", "ILM-1A2B3C4D")).toBe(true);
+    expect(isOwnPaymentCode("  Ilm-1a2b3C4d \n", "ILM-1A2B3C4D")).toBe(true);
+  });
+  it("lets a real transaction ID through", () => {
+    expect(isOwnPaymentCode("TXN123456789", "ILM-1A2B3C4D")).toBe(false);
+    expect(isOwnPaymentCode("ILM-1A2B3C4D9", "ILM-1A2B3C4D")).toBe(false);
+  });
+  it("uses the message the user asked for", () => {
+    expect(OWN_CODE_MESSAGE).toBe("This is your payment code. Enter the transaction ID from your JazzCash/Easypaisa SMS or bank receipt.");
   });
 });
