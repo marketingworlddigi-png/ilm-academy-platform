@@ -19,12 +19,12 @@ export function HeaderAuth({ locale, accountHref, loginHref, signupHref }: { loc
   }, []);
 
   // Until the browser has checked, show nothing rather than the wrong buttons.
-  if (signedIn === null) return <span aria-hidden="true" className="inline-block h-10 w-40" />;
+  if (signedIn === null) return <span aria-hidden="true" className="inline-block h-10 w-44" />;
 
   if (signedIn) {
     return (
       <>
-        <Link href={accountHref} className="btn btn-ghost">Account</Link>
+        <Link href={accountHref} className="btn btn-ghost">My learning</Link>
         <form action={signOut}>
           <input type="hidden" name="locale" value={locale} />
           <button type="submit" className="btn btn-primary">Sign out</button>
@@ -35,7 +35,7 @@ export function HeaderAuth({ locale, accountHref, loginHref, signupHref }: { loc
   return (
     <>
       <Link href={loginHref} className="btn btn-ghost">Sign in</Link>
-      <Link href={signupHref} className="btn btn-primary">Create account</Link>
+      <Link href={signupHref} className="btn btn-primary">Start learning free</Link>
     </>
   );
 }

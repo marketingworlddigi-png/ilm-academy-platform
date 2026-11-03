@@ -33,7 +33,7 @@ export function ReadAction({ resourceId, accessTier, allowOnlineView, readHref, 
   if (action === "premium") {
     return (
       <p className="mt-6">
-        <span className="inline-block rounded-full border border-accent px-3 py-1 text-sm font-semibold text-accent">
+        <span className="inline-block rounded-full border border-brand px-3 py-1 text-sm font-semibold text-brand">
           {accessTier === "academy" ? "Academy members" : "Premium"}
         </span>
         {accessTier !== "academy" && pricingHref && <Link className="ms-3 text-sm font-semibold text-brand underline" href={pricingHref}>See plans</Link>}

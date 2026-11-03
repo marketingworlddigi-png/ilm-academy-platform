@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Newsreader, Noto_Naskh_Arabic } from "next/font/google";
+import { Amiri, Noto_Nastaliq_Urdu, Plus_Jakarta_Sans } from "next/font/google";
 import { notFound } from "next/navigation";
 import { dirOf, htmlLangOf, isLocale, locales } from "@/lib/i18n/config";
 import { robotsForLocale } from "@/lib/seo";
@@ -8,9 +8,9 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import "../globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
-const newsreader = Newsreader({ subsets: ["latin"], variable: "--font-newsreader", display: "swap" });
-const arabic = Noto_Naskh_Arabic({ subsets: ["arabic"], variable: "--font-arabic", display: "swap" });
+const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-jakarta", display: "swap" });
+const urdu = Noto_Nastaliq_Urdu({ subsets: ["arabic"], variable: "--font-urdu", display: "swap" });
+const amiri = Amiri({ subsets: ["arabic", "latin"], weight: ["400", "700"], variable: "--font-amiri", display: "swap" });
 
 export const generateStaticParams = () => locales.map((locale) => ({ locale }));
 
@@ -30,7 +30,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   return (
-    <html lang={htmlLangOf(locale)} dir={dirOf(locale)} className={`${inter.variable} ${newsreader.variable} ${arabic.variable}`}>
+    <html lang={htmlLangOf(locale)} dir={dirOf(locale)} className={`${jakarta.variable} ${urdu.variable} ${amiri.variable}`}>
       <body className="flex min-h-screen flex-col antialiased">
         <SiteHeader locale={locale} />
         <div className="flex-1">{children}</div>

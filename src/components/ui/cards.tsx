@@ -1,0 +1,44 @@
+import Link from "next/link";
+import { Badge, ProgressBar } from "./primitives";
+
+/** One darja (level) tile: number badge, Urdu name in Nastaliq, transliterated name and a subtitle. */
+export function DarjaCard({ href, number, tag, nameUr, nameLatin, subtitle }: {
+  href: string; number: number; tag?: string | null; nameUr?: string | null; nameLatin: string; subtitle: string;
+}) {
+  return (
+    <li>
+      <Link href={href} className="flex h-full flex-col rounded-[14px] border border-line bg-white p-4 transition-colors hover:border-primary">
+        <span className="flex items-center justify-between">
+          <span aria-hidden="true" className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-primary-dark text-sm font-bold text-white">{number}</span>
+          {tag && <Badge>{tag}</Badge>}
+        </span>
+        {nameUr && <span lang="ur" dir="rtl" className="urdu mt-3 text-xl font-bold text-ink">{nameUr}</span>}
+        <span className={`${nameUr ? "" : "mt-3 "}block font-semibold text-ink`}>{nameLatin}</span>
+        <span className="mt-auto pt-2 text-sm text-muted">{subtitle}</span>
+      </Link>
+    </li>
+  );
+}
+
+/** Course tile: a green band carrying the Arabic title, then eyebrow, title, academy and teacher, and lesson count. */
+export function CourseCard({ href, arabicTitle, premium, eyebrow, title, byline, meta, progress }: {
+  href: string; arabicTitle?: string | null; premium: boolean; eyebrow?: string; title: string; byline?: string; meta?: string; progress?: number;
+}) {
+  return (
+    <li>
+      <Link href={href} className="flex h-full flex-col overflow-hidden rounded-[14px] border border-line bg-white transition-colors hover:border-primary">
+        <span className="relative flex h-24 items-center justify-center bg-primary px-4">
+          {arabicTitle && <span lang="ar" dir="rtl" className="arabic-title truncate text-2xl font-bold text-gold">{arabicTitle}</span>}
+          <Badge tone={premium ? "gold" : "green"} className="absolute end-3 top-3">{premium ? "Premium" : "Free"}</Badge>
+        </span>
+        <span className="flex flex-1 flex-col p-4">
+          {eyebrow && <span className="text-xs font-bold uppercase tracking-wide text-primary">{eyebrow}</span>}
+          <span className="mt-1 font-semibold leading-snug text-ink">{title}</span>
+          {byline && <span className="mt-1 text-sm text-muted">{byline}</span>}
+          {progress !== undefined && <ProgressBar value={progress} className="mt-3" label={`${title} progress`} />}
+          {meta && <span className="mt-auto pt-3 text-sm text-muted">{meta}</span>}
+        </span>
+      </Link>
+    </li>
+  );
+}
