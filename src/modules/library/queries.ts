@@ -79,3 +79,38 @@ export async function countBooksBySubject(db: SupabaseClient, levelId: string): 
   for (const r of data ?? []) if (r.subject_id) m.set(r.subject_id, (m.get(r.subject_id) ?? 0) + 1);
   return m;
 }
+
+export type SubjectHit = { id: string; slug: string; name_en: string; name_ur: string | null; name_ar: string | null; boardSlug: string; levelSlug: string; levelName: string };
+
+/**
+ * Library search: subjects whose English, Urdu or Arabic name matches (case-insensitive), plus books that match by
+ * title/author OR belong to a matching subject. `q` must already be sanitised (no commas, parentheses, % or _).
+ */
+export async function searchLibrary(db: SupabaseClient, q: string) {
+  const like = `%${q}%`;
+  const { data: subjectRows } = await db.from("subjects").select("id, slug, name_en, name_ur, name_ar")
+    .eq("status", "published").or(`name_en.ilike.${like},name_ur.ilike.${like},name_ar.ilike.${like}`).order("name_en").limit(12);
+  const matched = subjectRows ?? [];
+  const ids = matched.map((s) => s.id as string);
+
+  const [{ data: links }, { data: byText }, { data: bySubject }] = await Promise.all([
+    ids.length ? db.from("level_subjects").select("subject_id, levels!inner(slug, name_en, boards!inner(slug))").in("subject_id", ids) : Promise.resolve({ data: [] }),
+    db.from("resources").select(BOOK_COLUMNS).eq("status", "published")
+      .or(`title.ilike.${like},title_ur.ilike.${like},title_ar.ilike.${like},author.ilike.${like}`).order("title").limit(30),
+    ids.length ? db.from("resources").select(BOOK_COLUMNS).eq("status", "published").in("subject_id", ids).order("title").limit(30) : Promise.resolve({ data: [] }),
+  ]);
+
+  // A subject can sit in several levels; link to the first one found. Subjects in no published level have no page to open.
+  const subjects: SubjectHit[] = matched.flatMap((s) => {
+    const link = (links ?? []).find((l: { subject_id: string }) => l.subject_id === s.id) as
+      | { levels: { slug: string; name_en: string; boards: { slug: string } | { slug: string }[] } | { slug: string; name_en: string; boards: { slug: string } | { slug: string }[] }[] }
+      | undefined;
+    const level = link && [link.levels].flat()[0];
+    const board = level && [level.boards].flat()[0];
+    return level && board ? [{ ...s, boardSlug: board.slug, levelSlug: level.slug, levelName: level.name_en }] : [];
+  });
+
+  const seen = new Set<string>();
+  const books = [...(bySubject ?? []), ...(byText ?? [])].filter((b) => !seen.has(b.id) && !!seen.add(b.id)).slice(0, 30);
+  return { subjects, books };
+}

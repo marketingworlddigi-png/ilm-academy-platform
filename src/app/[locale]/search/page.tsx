@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { href, isLocale } from "@/lib/i18n/config";
 import { createPublicClient } from "@/lib/supabase/public";
-import { BOOK_COLUMNS } from "@/modules/library/queries";
-import { Card, CourseCard, EmptyState, PageHeader } from "@/components/ui";
+import { searchLibrary, splitLevelName } from "@/modules/library/queries";
+import { Card, CourseCard, EmptyState, PageHeader, SubjectCard } from "@/components/ui";
 import { courseIsPremium } from "@/modules/courses/access";
 
 export const metadata: Metadata = { title: "Search", robots: { index: false } };
@@ -18,12 +18,12 @@ export default async function SearchPage({ params, searchParams }: PageProps<"/[
   const raw = (await searchParams).q;
   const q = clean(Array.isArray(raw) ? raw[0] ?? "" : raw ?? "");
   const db = createPublicClient();
-  const [books, courses] = q.length < 2 ? [[], []] : await Promise.all([
-    db.from("resources").select(BOOK_COLUMNS).eq("status", "published")
-      .or(`title.ilike.%${q}%,title_ur.ilike.%${q}%,title_ar.ilike.%${q}%,author.ilike.%${q}%`).order("title").limit(30).then((r) => r.data ?? []),
+  const [lib, courses] = q.length < 2 ? [{ subjects: [], books: [] }, []] : await Promise.all([
+    searchLibrary(db, q),
     db.from("courses").select("id, slug, title, summary, academies!inner(slug, name)").eq("status", "published").is("deleted_at", null)
       .ilike("title", `%${q}%`).limit(12).then((r) => (r.data ?? []).flatMap((c) => { const a = [c.academies].flat()[0]; return a ? [{ ...c, academy: a }] : []; })),
   ]);
+  const { subjects, books } = lib;
 
   return (
     <main className="mx-auto max-w-6xl px-5 py-10">
@@ -33,9 +33,21 @@ export default async function SearchPage({ params, searchParams }: PageProps<"/[
         <button className="btn btn-primary" type="submit">Search</button>
       </form>
       {q.length < 2 ? <div className="mt-8"><EmptyState title="Type at least two letters to search." /></div>
-        : books.length === 0 && courses.length === 0 ? <div className="mt-8"><EmptyState title="Nothing found.">Try a shorter word, or browse the library by darja.</EmptyState></div>
+        : books.length === 0 && courses.length === 0 && subjects.length === 0 ? <div className="mt-8"><EmptyState title="Nothing found.">Try a shorter word, or browse the library by darja.</EmptyState></div>
         : (
           <>
+            {subjects.length > 0 && (
+              <section className="mt-8">
+                <h2 className="text-xl font-bold">Subjects</h2>
+                <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {subjects.map((s) => (
+                    <SubjectCard key={s.id} href={href(locale, `/library/${s.boardSlug}/${s.levelSlug}/${s.slug}`)}
+                      nameNative={s.name_ar ?? s.name_ur} nativeLang={s.name_ar ? "ar" : "ur"} nameLatin={s.name_en}
+                      subtitle={`${splitLevelName(s.levelName).latin} · Open books`} />
+                  ))}
+                </ul>
+              </section>
+            )}
             {courses.length > 0 && (
               <section className="mt-8">
                 <h2 className="text-xl font-bold">Courses</h2>
