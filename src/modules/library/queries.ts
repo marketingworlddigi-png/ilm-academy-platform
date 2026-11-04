@@ -65,3 +65,17 @@ export async function getBook(db: SupabaseClient, id: string) {
   return { ...data, has_file: !!storage_path, info: (info as { attribution_text: string | null; license_type: string; allow_online_view: boolean; allow_download: boolean }[] | null)?.[0] ?? null,
     board: board?.data ?? null, level: level?.data ?? null, subject: subject?.data ?? null };
 }
+
+/** Level names are stored as "Transliteration (Darja) - Equivalent"; the part after the dash is the school-system equivalent. */
+export function splitLevelName(n: string): { latin: string; equiv: string | null } {
+  const [a, ...r] = n.split(" - ");
+  return { latin: a, equiv: r.join(" - ") || null };
+}
+
+/** Published book counts per subject for one level, in a single query. */
+export async function countBooksBySubject(db: SupabaseClient, levelId: string): Promise<Map<string, number>> {
+  const { data } = await db.from("resources").select("subject_id").eq("status", "published").eq("level_id", levelId).limit(2000);
+  const m = new Map<string, number>();
+  for (const r of data ?? []) if (r.subject_id) m.set(r.subject_id, (m.get(r.subject_id) ?? 0) + 1);
+  return m;
+}

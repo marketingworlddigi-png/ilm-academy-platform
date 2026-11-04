@@ -6,6 +6,7 @@ import { absoluteUrl } from "@/lib/site";
 import { createPublicClient } from "@/lib/supabase/public";
 import { getBoard, getLevel, getSubjectBySlug, listBooks, listSubjectsForLevel, nameFor } from "@/modules/library/queries";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { EmptyState } from "@/components/ui";
 import { BookCard } from "@/components/book-card";
 import { JsonLd } from "@/components/json-ld";
 
@@ -41,20 +42,27 @@ export default async function SubjectPage({ params }: PageProps<"/[locale]/libra
   const books = await listBooks(db, { levelId: level.id, subjectId: subject.id });
   const base = `/library/${board.slug}/${level.slug}`;
   return (
-    <main className="mx-auto max-w-6xl px-5 py-12">
-      <Breadcrumbs crumbs={[
-        { label: "Home", path: href(locale) }, { label: "Library", path: href(locale, "/library") },
-        { label: nameFor(board, locale), path: href(locale, `/library/${board.slug}`) },
-        { label: nameFor(level, locale), path: href(locale, base) },
-        { label: nameFor(subject, locale), path: href(locale, `${base}/${subject.slug}`) },
-      ]} />
-      <h1 className="mt-4 font-display text-3xl font-semibold sm:text-4xl">{nameFor(subject, locale)}</h1>
-      <p className="mt-2 text-ink-soft">{nameFor(level, locale)} · {nameFor(board, locale)}</p>
-      {books.length === 0 ? (
-        <p className="mt-10 rounded-xl border border-line p-6 text-ink-soft">No books are listed here yet. Books appear once their distribution permissions are verified.</p>
-      ) : (
-        <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{books.map((bk) => <BookCard key={bk.id} book={bk} locale={locale} />)}</ul>
-      )}
+    <main>
+      <section className="bg-ink text-white star-pattern">
+        <div className="mx-auto max-w-6xl px-5 py-10 sm:py-12">
+          <div><Breadcrumbs tone="dark" crumbs={[
+            { label: "Home", path: href(locale) }, { label: "Library", path: href(locale, "/library") },
+            { label: nameFor(board, locale), path: href(locale, `/library/${board.slug}`) },
+            { label: nameFor(level, locale), path: href(locale, base) },
+            { label: nameFor(subject, locale), path: href(locale, `${base}/${subject.slug}`) },
+          ]} /></div>
+          {(subject.name_ar ?? subject.name_ur) && <p lang={subject.name_ar ? "ar" : "ur"} dir="rtl" className={`${subject.name_ar ? "arabic-title" : "urdu"} mt-4 w-fit text-3xl font-bold text-gold`}>{subject.name_ar ?? subject.name_ur}</p>}
+          <h1 className="text-2xl font-bold leading-tight sm:text-3xl">{subject.name_en}</h1>
+          <p className="mt-2 text-white/80">{nameFor(level, locale)} &middot; {nameFor(board, locale)}</p>
+        </div>
+      </section>
+      <div className="mx-auto max-w-6xl px-5 py-10">
+        {books.length === 0 ? (
+          <EmptyState title="No books are listed here yet.">Books appear once their distribution permissions are verified.</EmptyState>
+        ) : (
+          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{books.map((bk) => <BookCard key={bk.id} book={bk} locale={locale} />)}</ul>
+        )}
+      </div>
       <JsonLd data={{
         "@context": "https://schema.org", "@type": "CollectionPage", name: `${subject.name_en}: ${level.name_en}`,
         url: absoluteUrl(href(locale, `${base}/${subject.slug}`)),

@@ -42,3 +42,18 @@ export function CourseCard({ href, arabicTitle, premium, eyebrow, title, byline,
     </li>
   );
 }
+
+/** Subject tile: Arabic or Urdu name in its own script on top, English name and book count below. */
+export function SubjectCard({ href, nameNative, nativeLang, nameLatin, subtitle }: {
+  href: string; nameNative?: string | null; nativeLang?: "ur" | "ar"; nameLatin: string; subtitle: string;
+}) {
+  return (
+    <li>
+      <Link href={href} className="flex h-full flex-col rounded-[14px] border border-line bg-white p-4 transition-colors hover:border-primary">
+        {nameNative && <span lang={nativeLang} dir="rtl" className={`${nativeLang === "ar" ? "arabic-title" : "urdu"} text-xl font-bold text-primary`}>{nameNative}</span>}
+        <span className={`${nameNative ? "" : "mt-1 "}block font-semibold text-ink`}>{nameLatin}</span>
+        <span className="mt-auto pt-2 text-sm text-muted">{subtitle}</span>
+      </Link>
+    </li>
+  );
+}

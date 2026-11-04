@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { alternatesFor } from "@/lib/seo";
 import { createPublicClient } from "@/lib/supabase/public";
-import { listBoards, listLevels, listSubjectsForLevel, nameFor } from "@/modules/library/queries";
+import { listBoards, listLevels, listSubjectsForLevel, nameFor, splitLevelName as splitName } from "@/modules/library/queries";
 import { listActivePlans, type Plan } from "@/modules/payments/queries";
 import { formatPkr, periodLabel } from "@/modules/payments/format";
 import { Badge, Button, Card, CourseCard, DarjaCard } from "@/components/ui";
@@ -55,8 +55,6 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
   const counts = subjectLists.map((x) => x.length);
   // Popular chips: the distinct subjects that actually exist in the syllabus, in syllabus order.
   const chips = [...new Map(subjectLists.flatMap((xs, i) => xs.map((x) => [x.id, { ...x, levelSlug: levels[i].slug }] as const))).values()].slice(0, 6);
-  // Level names are stored as "Transliteration (Darja) - Equivalent"; the part after the dash is the school-system equivalent.
-  const splitName = (n: string) => { const [a, ...r] = n.split(" - "); return { latin: a, equiv: r.join(" - ") || null }; };
   const courses = (coursesRes.data ?? []).flatMap((c) => { const a = [c.academies].flat()[0]; return a ? [{ ...c, academy: a }] : []; });
   const saving = savingPercent(plans);
 

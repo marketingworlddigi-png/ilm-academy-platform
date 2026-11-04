@@ -1,11 +1,11 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { href, isLocale } from "@/lib/i18n/config";
 import { alternatesFor } from "@/lib/seo";
 import { createPublicClient } from "@/lib/supabase/public";
-import { getBoard, getLevel, listSubjectsForLevel, nameFor } from "@/modules/library/queries";
+import { getBoard, getLevel, countBooksBySubject, listSubjectsForLevel, nameFor, splitLevelName } from "@/modules/library/queries";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { Badge, EmptyState, SubjectCard } from "@/components/ui";
 
 export const revalidate = 300;
 
@@ -33,26 +33,37 @@ export default async function LevelPage({ params }: PageProps<"/[locale]/library
   if (!isLocale(locale)) notFound();
   const { db, board, level } = await load(b, lv);
   if (!board || !level) notFound();
-  const subjects = await listSubjectsForLevel(db, level.id);
+  const [subjects, bookCounts] = await Promise.all([listSubjectsForLevel(db, level.id), countBooksBySubject(db, level.id)]);
+  const equiv = splitLevelName(level.name_en).equiv;
   return (
-    <main className="mx-auto max-w-6xl px-5 py-12">
-      <Breadcrumbs crumbs={[
-        { label: "Home", path: href(locale) }, { label: "Library", path: href(locale, "/library") },
-        { label: nameFor(board, locale), path: href(locale, `/library/${board.slug}`) },
-        { label: nameFor(level, locale), path: href(locale, `/library/${board.slug}/${level.slug}`) },
-      ]} />
-      <h1 className="mt-4 font-display text-3xl font-semibold sm:text-4xl">{nameFor(level, locale)}</h1>
-      {subjects.length === 0 ? (
-        <p className="mt-10 rounded-xl border border-line p-6 text-ink-soft">No subjects have been added to this level yet.</p>
-      ) : (
-        <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {subjects.map((s) => (
-            <li key={s.id} className="rounded-xl border border-line p-5">
-              <Link href={href(locale, `/library/${board.slug}/${level.slug}/${s.slug}`)} className="font-semibold text-brand underline">{nameFor(s, locale)}</Link>
-            </li>
-          ))}
-        </ul>
-      )}
+    <main>
+      <section className="bg-ink text-white star-pattern">
+        <div className="mx-auto max-w-6xl px-5 py-10 sm:py-12">
+          <div><Breadcrumbs tone="dark" crumbs={[
+            { label: "Home", path: href(locale) }, { label: "Library", path: href(locale, "/library") },
+            { label: nameFor(board, locale), path: href(locale, `/library/${board.slug}`) },
+            { label: nameFor(level, locale), path: href(locale, `/library/${board.slug}/${level.slug}`) },
+          ]} /></div>
+          {level.name_ur && <p lang="ur" dir="rtl" className="urdu mt-4 w-fit text-3xl font-bold text-gold">{level.name_ur}</p>}
+          <h1 className={`${level.name_ur ? "" : "mt-4 "}text-2xl font-bold leading-tight sm:text-3xl`}>{splitLevelName(level.name_en).latin}</h1>
+          <div className="mt-3 flex flex-wrap gap-2"><Badge tone="gold">{nameFor(board, locale)}</Badge>{equiv && <Badge tone="neutral">Equivalent: {equiv}</Badge>}</div>
+        </div>
+      </section>
+      <div className="mx-auto max-w-6xl px-5 py-10">
+        <h2 className="text-2xl font-bold">Subjects</h2>
+        {subjects.length === 0 ? <div className="mt-5"><EmptyState title="No subjects have been added to this level yet." /></div> : (
+          <ul className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {subjects.map((s) => {
+              const n = bookCounts.get(s.id) ?? 0;
+              return (
+                <SubjectCard key={s.id} href={href(locale, `/library/${board.slug}/${level.slug}/${s.slug}`)}
+                  nameNative={s.name_ar ?? s.name_ur} nativeLang={s.name_ar ? "ar" : "ur"} nameLatin={s.name_en}
+                  subtitle={n > 0 ? `${n} ${n === 1 ? "book" : "books"}` : "Books coming soon"} />
+              );
+            })}
+          </ul>
+        )}
+      </div>
     </main>
   );
 }

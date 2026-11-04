@@ -72,7 +72,7 @@ export default async function CoursePage({ params, searchParams }: PageProps<"/[
     <main>
       <section className="bg-ink text-white star-pattern">
         <div className="mx-auto max-w-6xl px-5 py-10 sm:py-14">
-          <div className="[&_a]:text-white/80 [&_li]:text-white/80"><Breadcrumbs crumbs={[{ label: "Home", path: href(locale) }, { label: "Courses", path: href(locale, "/courses") }, { label: c.title, path: here }]} /></div>
+          <div><Breadcrumbs tone="dark" crumbs={[{ label: "Home", path: href(locale) }, { label: "Courses", path: href(locale, "/courses") }, { label: c.title, path: here }]} /></div>
           <h1 className="mt-4 max-w-3xl text-3xl font-bold leading-tight sm:text-4xl">{c.title}</h1>
           <p className="mt-2 text-white/75">By {c.academy.name}</p>
           <div className="mt-4 flex flex-wrap gap-2">

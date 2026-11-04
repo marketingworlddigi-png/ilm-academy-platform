@@ -5,16 +5,16 @@ import { JsonLd } from "./json-ld";
 export type Crumb = { label: string; path: string };
 
 /** Visible trail plus BreadcrumbList structured data. The last crumb is the current page and is not a link. */
-export function Breadcrumbs({ crumbs }: { crumbs: Crumb[] }) {
+export function Breadcrumbs({ crumbs, tone = "light" }: { crumbs: Crumb[]; tone?: "light" | "dark" }) {
   return (
     <>
-      <nav aria-label="Breadcrumb" className="text-sm text-ink-soft">
+      <nav aria-label="Breadcrumb" className={`text-sm ${tone === "dark" ? "text-white/70" : "text-muted"}`}>
         <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
           {crumbs.map((c, i) => (
             <li key={c.path} className="flex items-center gap-2">
               {i < crumbs.length - 1
                 ? <Link className="underline" href={c.path}>{c.label}</Link>
-                : <span aria-current="page" className="text-ink">{c.label}</span>}
+                : <span aria-current="page" className={tone === "dark" ? "font-semibold text-white" : "text-ink"}>{c.label}</span>}
               {i < crumbs.length - 1 && <span aria-hidden="true">/</span>}
             </li>
           ))}
