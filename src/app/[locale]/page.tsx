@@ -8,6 +8,7 @@ import { listBoards, listLevels, listSubjectsForLevel, nameFor } from "@/modules
 import { listActivePlans, type Plan } from "@/modules/payments/queries";
 import { formatPkr, periodLabel } from "@/modules/payments/format";
 import { Badge, Button, Card, CourseCard, DarjaCard } from "@/components/ui";
+import { ContinueCard } from "@/components/continue-card";
 
 export const revalidate = 300;
 
@@ -50,26 +51,58 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
   ]);
   const board = boards[0] ?? null;
   const levels = board ? await listLevels(db, board.id) : [];
-  const counts = await Promise.all(levels.map(async (l) => (await listSubjectsForLevel(db, l.id)).length));
+  const subjectLists = await Promise.all(levels.map((l) => listSubjectsForLevel(db, l.id)));
+  const counts = subjectLists.map((x) => x.length);
+  // Popular chips: the distinct subjects that actually exist in the syllabus, in syllabus order.
+  const chips = [...new Map(subjectLists.flatMap((xs, i) => xs.map((x) => [x.id, { ...x, levelSlug: levels[i].slug }] as const))).values()].slice(0, 6);
+  // Level names are stored as "Transliteration (Darja) - Equivalent"; the part after the dash is the school-system equivalent.
+  const splitName = (n: string) => { const [a, ...r] = n.split(" - "); return { latin: a, equiv: r.join(" - ") || null }; };
   const courses = (coursesRes.data ?? []).flatMap((c) => { const a = [c.academies].flat()[0]; return a ? [{ ...c, academy: a }] : []; });
   const saving = savingPercent(plans);
 
   return (
     <main>
       <section className="star-pattern text-white">
-        <div className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
-          <p className="inline-block rounded-full border border-white/25 px-3 py-1 text-xs font-bold uppercase tracking-widest text-gold">Darse Nizami · Online</p>
-          <h1 className="mt-5 max-w-3xl text-4xl font-bold leading-tight sm:text-6xl">Your whole madrasa syllabus, in one place.</h1>
-          <p className="mt-5 max-w-2xl text-lg text-white/80">
-            Books, notes and courses from independent academies and teachers, organised by board, level and subject.
-            Every book is published only after its distribution permission has been verified.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Button href={href(locale, "/signup")} variant="gold" size="lg">Start learning free</Button>
-            <Button href={href(locale, "/library")} variant="outline" size="lg">Browse the library</Button>
+        <div className="mx-auto grid max-w-6xl gap-10 px-5 py-14 sm:py-20 lg:grid-cols-[1fr_340px] lg:items-center">
+          <div>
+            <p className="inline-block rounded-full border border-white/25 px-3 py-1 text-xs font-bold uppercase tracking-widest text-gold">Darse Nizami · Online</p>
+            <h1 className="mt-5 max-w-3xl text-4xl font-bold leading-tight sm:text-6xl">Your whole madrasa syllabus, in one place.</h1>
+            <p className="mt-5 max-w-2xl text-lg text-white/80">
+              Books, notes and courses from independent academies and teachers, organised by board, level and subject.
+              Every book is published only after its distribution permission has been verified.
+            </p>
+            <form action={href(locale, "/search")} role="search" className="mt-7 flex max-w-xl gap-2">
+              <input name="q" type="search" aria-label="Search books and courses" placeholder="Search a book, subject or course"
+                className="min-w-0 flex-1 rounded-[10px] border border-white/20 bg-white px-4 py-3 text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-gold" />
+              <Button type="submit" variant="gold">Search</Button>
+            </form>
+            {chips.length > 0 && (
+              <div className="mt-4 flex flex-wrap items-center gap-2 text-sm">
+                <span className="text-white/70">Popular:</span>
+                {chips.map((c) => (
+                  <Link key={c.id} href={href(locale, `/library/${board!.slug}/${c.levelSlug}/${c.slug}`)} className="rounded-full border border-white/25 px-3 py-1 text-white/90 hover:bg-white/10">{nameFor(c, locale)}</Link>
+                ))}
+              </div>
+            )}
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Button href={href(locale, "/signup")} variant="gold" size="lg">Start learning free</Button>
+              <Button href={href(locale, "/library")} variant="outline" size="lg">Browse the library</Button>
+            </div>
           </div>
+          <ContinueCard locale={locale} signupHref={href(locale, "/signup")} libraryHref={href(locale, "/library")} />
         </div>
       </section>
+
+      {boards.length > 0 && (
+        <section className="border-b border-line bg-white">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-5 py-4 text-sm">
+            <span className="font-bold uppercase tracking-widest text-muted">Boards</span>
+            {boards.map((b) => (
+              <Link key={b.id} href={href(locale, `/library/${b.slug}`)} className="rounded-full border border-line px-3 py-1 font-semibold text-ink hover:border-primary hover:text-primary">{nameFor(b, locale)}</Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {levels.length > 0 && board && (
         <section className="mx-auto max-w-6xl px-5 py-14">
@@ -83,7 +116,7 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
           <ul className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
             {levels.slice(0, 8).map((l, i) => (
               <DarjaCard key={l.id} href={href(locale, `/library/${board.slug}/${l.slug}`)} number={i + 1}
-                nameUr={l.name_ur} nameLatin={l.name_en}
+                nameUr={l.name_ur} nameLatin={splitName(l.name_en).latin} tag={splitName(l.name_en).equiv}
                 subtitle={counts[i] > 0 ? `${counts[i]} ${counts[i] === 1 ? "subject" : "subjects"}` : "Syllabus coming soon"} />
             ))}
           </ul>
