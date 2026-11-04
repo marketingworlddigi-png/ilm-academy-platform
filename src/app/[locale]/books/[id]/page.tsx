@@ -70,16 +70,16 @@ export default async function BookPage({ params }: PageProps<"/[locale]/books/[i
         <div>
           {cover
             // eslint-disable-next-line @next/next/no-img-element
-            ? <img src={cover} alt={`Cover of ${title}`} width={220} height={300} className="w-full max-w-[220px] rounded-lg border border-line object-cover" />
-            : <div aria-hidden="true" className="flex aspect-[3/4] w-full max-w-[220px] items-center justify-center rounded-lg border border-line bg-paper-2 font-display text-5xl text-ink-soft">{title.slice(0, 1)}</div>}
+            ? <img src={cover} alt={`Cover of ${title}`} width={220} height={300} className="w-full max-w-[220px] rounded-[14px] border border-line object-cover shadow-sm" />
+            : <div aria-hidden="true" className="flex aspect-[3/4] w-full max-w-[220px] items-center justify-center rounded-[14px] border border-line bg-surface text-5xl font-bold text-primary">{title.slice(0, 1)}</div>}
         </div>
         <div>
-          <h1 className="font-display text-3xl font-semibold sm:text-4xl">{title}</h1>
-          {book.author && <p className="mt-2 text-lg text-ink-soft">{book.author}</p>}
+          <h1 className="text-3xl font-bold leading-tight sm:text-4xl">{title}</h1>
+          {book.author && <p className="mt-2 text-lg text-muted">{book.author}</p>}
           {book.description && <p className="mt-6 whitespace-pre-line">{book.description}</p>}
           <dl className="mt-6 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
-            {facts.filter(([, v]) => v).map(([k, v]) => (<div key={k} className="contents"><dt className="text-ink-soft">{k}</dt><dd>{v}</dd></div>))}
-            <dt className="text-ink-soft">Access</dt><dd>{book.access_tier === "free" ? "Free" : book.access_tier}</dd>
+            {facts.filter(([, v]) => v).map(([k, v]) => (<div key={k} className="contents"><dt className="text-muted">{k}</dt><dd>{v}</dd></div>))}
+            <dt className="text-muted">Access</dt><dd>{book.access_tier === "free" ? "Free" : book.access_tier}</dd>
           </dl>
           {book.info && (
             <ReadAction resourceId={book.id} accessTier={book.access_tier} allowOnlineView={book.info.allow_online_view} readHref={href(locale, `/books/${book.id}/read`)} pricingHref={href(locale, "/pricing")} />
@@ -87,14 +87,14 @@ export default async function BookPage({ params }: PageProps<"/[locale]/books/[i
           {book.official_source_url && !(book.has_file && book.info?.allow_online_view) && (
             <p className="mt-6">
               <a className="btn btn-primary" href={book.official_source_url} target="_blank" rel="noopener noreferrer nofollow">Read on official website</a>
-              <span className="mt-2 block text-xs text-ink-soft">Opens the publisher&apos;s own site in a new tab.</span>
+              <span className="mt-2 block text-xs text-muted">Opens the publisher&apos;s own site in a new tab.</span>
             </p>
           )}
           {book.info && (
-            <section className="mt-8 rounded-xl border border-line p-4 text-sm">
+            <section className="mt-8 rounded-[14px] border border-line bg-surface p-4 text-sm">
               <h2 className="font-semibold">Licence</h2>
-              <p className="mt-1 text-ink-soft">{LICENSE_LABEL[book.info.license_type] ?? "Licence on file"}.{book.info.attribution_text ? ` ${book.info.attribution_text}` : ""}</p>
-              <p className="mt-1 text-ink-soft">
+              <p className="mt-1 text-muted">{LICENSE_LABEL[book.info.license_type] ?? "Licence on file"}.{book.info.attribution_text ? ` ${book.info.attribution_text}` : ""}</p>
+              <p className="mt-1 text-muted">
                 {book.info.allow_online_view ? "Online reading is permitted." : "Online reading is not permitted."}{" "}
                 {book.info.allow_download ? "Downloading is permitted." : "Downloading is not permitted."}
               </p>

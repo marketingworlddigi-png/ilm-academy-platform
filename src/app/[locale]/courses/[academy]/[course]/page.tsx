@@ -6,6 +6,7 @@ import { alternatesFor } from "@/lib/seo";
 import { getSessionUser } from "@/lib/auth/session";
 import { createPublicClient } from "@/lib/supabase/public";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { Badge, Button, Card, EmptyState } from "@/components/ui";
 import { Flash, flashFrom } from "@/components/admin/ui";
 import { enrollInCourse, leaveCourse } from "../../../course-actions";
 
@@ -53,50 +54,73 @@ export default async function CoursePage({ params, searchParams }: PageProps<"/[
     </>
   );
 
+  const lessonCount = ((outline ?? []) as OutlineRow[]).length;
+  const previewCount = ((outline ?? []) as OutlineRow[]).filter((l) => l.is_preview).length;
+  const enrollBox = enrolled ? (
+    <form action={leaveCourse} className="space-y-3">
+      {hidden}
+      <Badge tone="green">You are enrolled</Badge>
+      <button className="btn btn-ghost w-full" type="submit">Leave course</button>
+    </form>
+  ) : user ? (
+    <form action={enrollInCourse}>{hidden}<Button type="submit" className="w-full">Enroll for free</Button></form>
+  ) : (
+    <Button href={`${href(locale, "/login")}?next=${encodeURIComponent(here)}`} className="w-full">Sign in to enroll</Button>
+  );
+
   return (
-    <main className="mx-auto max-w-3xl px-5 py-12">
-      <Breadcrumbs crumbs={[{ label: "Home", path: href(locale) }, { label: "Courses", path: href(locale, "/courses") }, { label: c.title, path: here }]} />
-      <h1 className="mt-4 font-display text-3xl font-semibold sm:text-4xl">{c.title}</h1>
-      <p className="mt-1 text-ink-soft">By {c.academy.name}</p>
-      <Flash error={error} notice={notice} />
-      {c.summary && <p className="mt-4 text-lg">{c.summary}</p>}
-      {c.description && <p className="mt-4 whitespace-pre-line text-ink-soft">{c.description}</p>}
+    <main>
+      <section className="bg-ink text-white star-pattern">
+        <div className="mx-auto max-w-6xl px-5 py-10 sm:py-14">
+          <div className="[&_a]:text-white/80 [&_li]:text-white/80"><Breadcrumbs crumbs={[{ label: "Home", path: href(locale) }, { label: "Courses", path: href(locale, "/courses") }, { label: c.title, path: here }]} /></div>
+          <h1 className="mt-4 max-w-3xl text-3xl font-bold leading-tight sm:text-4xl">{c.title}</h1>
+          <p className="mt-2 text-white/75">By {c.academy.name}</p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Badge tone="gold">{lessonCount} {lessonCount === 1 ? "lesson" : "lessons"}</Badge>
+            {previewCount > 0 && <Badge tone="dark">{previewCount} free {previewCount === 1 ? "preview" : "previews"}</Badge>}
+          </div>
+        </div>
+      </section>
 
-      <div className="mt-6">
-        {enrolled ? (
-          <form action={leaveCourse} className="flex flex-wrap items-center gap-3">
-            {hidden}
-            <p className="text-sm font-semibold">You are enrolled.</p>
-            <button className="btn btn-ghost" type="submit">Leave course</button>
-          </form>
-        ) : user ? (
-          <form action={enrollInCourse}>{hidden}<button className="btn btn-primary" type="submit">Enroll for free</button></form>
-        ) : (
-          <Link className="btn btn-primary" href={`${href(locale, "/login")}?next=${encodeURIComponent(here)}`}>Sign in to enroll</Link>
-        )}
+      <div className="mx-auto grid max-w-6xl gap-8 px-5 py-10 lg:grid-cols-[1fr_320px]">
+        <div className="min-w-0">
+          <Flash error={error} notice={notice} />
+          {c.summary && <p className="text-lg text-ink">{c.summary}</p>}
+          {c.description && <p className="mt-4 whitespace-pre-line text-muted">{c.description}</p>}
+
+          <h2 className="mt-10 text-2xl font-bold">Course outline</h2>
+          {(modules ?? []).length === 0 ? <div className="mt-4"><EmptyState title="The outline is not available yet." /></div> : (
+            <ol className="mt-4 space-y-5">
+              {(modules ?? []).map((m, idx) => (
+                <li key={m.id}>
+                  <h3 className="flex items-center gap-3 font-semibold">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-sm text-white">{idx + 1}</span>{m.title}
+                  </h3>
+                  <ul className="mt-2 divide-y divide-line overflow-hidden rounded-[14px] border border-line bg-white text-sm">
+                    {lessonsOf(m.id).map((l) => (
+                      <li key={l.lesson_id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
+                        {enrolled || l.is_preview
+                          ? <Link className="font-medium text-primary hover:underline" href={href(locale, `/courses/${c.academy.slug}/${c.slug}/lessons/${l.lesson_id}`)}>{l.title}</Link>
+                          : <span className="text-muted">{l.title}</span>}
+                        {l.is_preview && !enrolled && <Badge tone="green">Free preview</Badge>}
+                      </li>
+                    ))}
+                    {lessonsOf(m.id).length === 0 && <li className="px-4 py-3 text-muted">No lessons yet.</li>}
+                  </ul>
+                </li>
+              ))}
+            </ol>
+          )}
+        </div>
+
+        <aside className="lg:sticky lg:top-24 lg:self-start">
+          <Card className="space-y-4 p-5">
+            <p className="text-2xl font-bold">Free</p>
+            {enrollBox}
+            <p className="text-xs text-muted">Offered by {c.academy.name}. Sign in to save your progress.</p>
+          </Card>
+        </aside>
       </div>
-
-      <h2 className="mt-10 font-display text-2xl font-semibold">Outline</h2>
-      {(modules ?? []).length === 0 ? <p className="mt-3 text-ink-soft">The outline is not available yet.</p> : (
-        <ol className="mt-4 space-y-6">
-          {(modules ?? []).map((m) => (
-            <li key={m.id}>
-              <h3 className="font-semibold">{m.title}</h3>
-              <ul className="mt-2 divide-y divide-line rounded-xl border border-line text-sm">
-                {lessonsOf(m.id).map((l) => (
-                  <li key={l.lesson_id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
-                    {enrolled || l.is_preview
-                      ? <Link className="text-brand underline" href={href(locale, `/courses/${c.academy.slug}/${c.slug}/lessons/${l.lesson_id}`)}>{l.title}</Link>
-                      : <span>{l.title}</span>}
-                    {l.is_preview && !enrolled && <span className="text-xs text-ink-soft">Free preview</span>}
-                  </li>
-                ))}
-                {lessonsOf(m.id).length === 0 && <li className="px-4 py-3 text-ink-soft">No lessons yet.</li>}
-              </ul>
-            </li>
-          ))}
-        </ol>
-      )}
     </main>
   );
 }
