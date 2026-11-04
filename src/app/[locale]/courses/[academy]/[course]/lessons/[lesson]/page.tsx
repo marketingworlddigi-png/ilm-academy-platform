@@ -7,6 +7,7 @@ import { idSchema } from "@/modules/catalog/schemas";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { Badge, Button, Card, ProgressBar } from "@/components/ui";
 import { Flash, flashFrom } from "@/components/admin/ui";
+import { parseVideoUrl } from "@/modules/courses/video";
 import { completeLesson } from "../../../../../learn-actions";
 
 export const dynamic = "force-dynamic";
@@ -24,7 +25,7 @@ export default async function LessonPage({ params, searchParams }: PageProps<"/[
 
   const { supabase, user } = await getSessionUser();
   const { data: l } = await supabase.from("lessons")
-    .select("id, title, body, is_preview, resource_id, position, module_id, courses!inner(id, slug, title, academies!inner(slug))")
+    .select("id, title, body, is_preview, resource_id, video_url, position, module_id, courses!inner(id, slug, title, academies!inner(slug))")
     .eq("id", id.data).maybeSingle();
   const c = l && [l.courses].flat()[0];
   const a = c && [c.academies].flat()[0];
@@ -48,6 +49,7 @@ export default async function LessonPage({ params, searchParams }: PageProps<"/[
   const next = idx >= 0 ? outline[idx + 1] : undefined;
   const pr = (prog as { total_lessons: number; completed_lessons: number; percent: number }[] | null)?.[0];
   const isDone = doneIds.has(l.id);
+  const video = parseVideoUrl(l.video_url);
   const lessonHref = (lid: string) => href(locale, `${base}/lessons/${lid}`);
 
   // Remember where the learner is, so "Continue learning" resumes here. Failure is harmless.
@@ -94,6 +96,14 @@ export default async function LessonPage({ params, searchParams }: PageProps<"/[
       <div className="mx-auto grid max-w-6xl gap-8 px-5 py-8 lg:grid-cols-[1fr_300px]">
         <article className="min-w-0">
           <Flash error={error} notice={notice} />
+          {video && (
+            <div className="mb-6 aspect-video w-full overflow-hidden rounded-[14px] border border-line bg-ink">
+              {/* The address is rebuilt from the parsed video id (YouTube via youtube-nocookie.com), never the pasted text. */}
+              <iframe src={video.embedUrl} title={`Video: ${l.title}`} loading="lazy" className="h-full w-full"
+                allow="fullscreen; picture-in-picture; encrypted-media" allowFullScreen referrerPolicy="strict-origin-when-cross-origin"
+                sandbox="allow-scripts allow-same-origin allow-presentation allow-popups" />
+            </div>
+          )}
           {/* Plain text only, never HTML. */}
           {l.body ? <div className="whitespace-pre-line text-lg leading-relaxed">{l.body}</div> : <p className="text-muted">This lesson has no text.</p>}
           {book && (

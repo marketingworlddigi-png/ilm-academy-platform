@@ -11,6 +11,11 @@ const q = async (user: string | null, sql: string, params: unknown[] = []) =>
 const failure = async (user: string | null, sql: string, params: unknown[] = []): Promise<string | null> => {
   try { await q(user, sql, params); return null; } catch (e) { return (e as Error).message; }
 };
+// Publishing is a platform decision now: staff submit, a super admin approves.
+const publish = async (courseId: string, owner = ownerA) => {
+  await q(owner, `select submit_course_for_review($1)`, [courseId]);
+  await q(admin, `select review_course($1,'approve',null)`, [courseId]);
+};
 const ids = async (user: string | null, sql: string, params: unknown[] = []) => (await q(user, sql, params)).map((r) => r.id);
 
 beforeAll(async () => {
@@ -79,17 +84,17 @@ describe("drafts are private", () => {
 describe("publishing", () => {
   it("needs at least one lesson", async () => {
     const empty = (await q(ownerA, `insert into courses (academy_id,slug,title,created_by) values ($1,'empty-one','Empty One',$2) returning id`, [academyA, ownerA]))[0].id;
-    expect(await failure(ownerA, `update courses set status='published' where id=$1`, [empty])).toMatch(/at least one lesson/);
+    expect(await failure(ownerA, `select submit_course_for_review($1)`, [empty])).toMatch(/at least one lesson/);
   });
 
   it("needs an approved academy", async () => {
     await db.exec(`update academies set status='pending' where id='${academyA}'`);
-    expect(await failure(ownerA, `update courses set status='published' where id='${course}'`)).toMatch(/approved/);
+    expect(await failure(ownerA, `select submit_course_for_review('${course}')`)).toMatch(/approved/);
     await db.exec(`update academies set status='active' where id='${academyA}'`);
   });
 
   it("publishing is audited and stamps the date", async () => {
-    await q(ownerA, `update courses set status='published' where id=$1`, [course]);
+    await publish(course);
     expect((await db.query<any>(`select published_at from courses where id=$1`, [course])).rows[0].published_at).not.toBeNull();
     expect((await db.query(`select 1 from audit_logs where action='course.published' and entity_id=$1`, [course])).rows).toHaveLength(1);
   });
@@ -98,7 +103,7 @@ describe("publishing", () => {
     const solo = (await q(ownerA, `insert into courses (academy_id,slug,title,created_by) values ($1,'solo-one','Solo One',$2) returning id`, [academyA, ownerA]))[0].id;
     const m = (await q(ownerA, `insert into course_modules (course_id,title) values ($1,'Only module') returning id`, [solo]))[0].id;
     const l = (await q(ownerA, `insert into lessons (course_id,module_id,title) values ($1,$2,'Only lesson') returning id`, [solo, m]))[0].id;
-    await q(ownerA, `update courses set status='published' where id=$1`, [solo]);
+    await publish(solo);
     expect(await failure(ownerA, `delete from lessons where id=$1`, [l])).toMatch(/at least one lesson/);
     expect(await failure(ownerA, `update courses set slug='renamed-one' where id=$1`, [solo])).toMatch(/Unpublish/);
   });
@@ -156,7 +161,8 @@ describe("a published course", () => {
     await q(ownerA, `update courses set status='archived' where id=$1`, [course]);
     expect(await q(null, `select id from courses where id=$1`, [course])).toHaveLength(0);
     expect(await ids(student, `select id from lessons where course_id=$1`, [course])).toHaveLength(0);
-    await q(ownerA, `update courses set status='published' where id=$1`, [course]);
+    await q(ownerA, `update courses set status='draft' where id=$1`, [course]);
+    await publish(course);
     expect(await ids(student, `select id from lessons where course_id=$1`, [course])).toHaveLength(2);
     await db.exec(`update academies set status='suspended' where id='${academyA}'`);
     expect(await q(null, `select id from courses where id=$1`, [course])).toHaveLength(0);
@@ -174,5 +180,72 @@ describe("linked library books", () => {
     await q(ownerA, `update lessons set resource_id=$1 where id=$2`, [platformBook, lessonPaid]);
     await q(ownerA, `update lessons set resource_id=$1 where id=$2`, [ownBook, lessonPaid]);
     expect(await failure(ownerA, `update lessons set resource_id=$1 where id=$2`, [foreignBook, lessonPaid])).toMatch(/cannot be linked/);
+  });
+});
+
+describe("course review", () => {
+  let c: string;
+  beforeAll(async () => {
+    c = (await q(ownerA, `insert into courses (academy_id,slug,title,created_by) values ($1,'review-me','Review Me',$2) returning id`, [academyA, ownerA]))[0].id;
+    const m = (await q(ownerA, `insert into course_modules (course_id,title) values ($1,'Unit') returning id`, [c]))[0].id;
+    await q(ownerA, `insert into lessons (course_id,module_id,title) values ($1,$2,'Lesson')`, [c, m]);
+  });
+  const state = async () => (await db.query<any>(`select status, review_status, review_note from courses where id=$1`, [c])).rows[0];
+
+  it("staff cannot publish directly or edit review fields", async () => {
+    expect(await failure(ownerA, `update courses set status='published' where id=$1`, [c])).toMatch(/Submit the course for review/);
+    expect(await failure(ownerA, `update courses set review_status='approved' where id=$1`, [c])).toMatch(/review process/);
+    expect(await failure(ownerA, `update courses set review_status='submitted' where id=$1`, [c])).toMatch(/review process/);
+    expect(await failure(stranger, `select submit_course_for_review($1)`, [c])).toMatch(/not found/);
+    expect(await failure(ownerB, `select submit_course_for_review($1)`, [c])).toMatch(/not found/);
+  });
+
+  it("submitting queues it, is idempotent, and is audited; it is still not public", async () => {
+    await q(ownerA, `select submit_course_for_review($1)`, [c]);
+    await q(ownerA, `select submit_course_for_review($1)`, [c]);
+    expect((await state()).review_status).toBe("submitted");
+    expect((await db.query(`select 1 from audit_logs where action='course.submitted' and entity_id=$1`, [c])).rows).toHaveLength(1);
+    expect(await q(null, `select id from courses where id=$1`, [c])).toHaveLength(0);
+  });
+
+  it("only a super admin can decide", async () => {
+    for (const u of [ownerA, ownerB, student, stranger]) expect(await failure(u, `select review_course($1,'approve',null)`, [c])).toMatch(/Not allowed/);
+  });
+
+  it("needs-changes requires a note, is audited, and lets the academy resubmit", async () => {
+    expect(await failure(admin, `select review_course($1,'changes',' ')`, [c])).toMatch(/what to change/);
+    await q(admin, `select review_course($1,'changes','Add a video to lesson one')`, [c]);
+    expect(await state()).toMatchObject({ status: "draft", review_status: "changes_requested", review_note: "Add a video to lesson one" });
+    expect(await q(null, `select id from courses where id=$1`, [c])).toHaveLength(0);
+    expect((await db.query<any>(`select details from audit_logs where action='course.changes_requested' and entity_id=$1`, [c])).rows[0].details.note).toBe("Add a video to lesson one");
+    expect(await failure(admin, `select review_course($1,'approve',null)`, [c])).toMatch(/not waiting/);
+    await q(ownerA, `select submit_course_for_review($1)`, [c]);
+  });
+
+  it("approval publishes, stamps the date and is audited; unpublishing resets review", async () => {
+    await q(admin, `select review_course($1,'approve',null)`, [c]);
+    expect(await state()).toMatchObject({ status: "published", review_status: "approved" });
+    expect(await q(null, `select id from courses where id=$1`, [c])).toHaveLength(1);
+    expect((await db.query(`select 1 from audit_logs where action='course.approved' and entity_id=$1`, [c])).rows).toHaveLength(1);
+    await q(ownerA, `update courses set status='draft' where id=$1`, [c]);
+    expect((await state()).review_status).toBe("none");
+    expect(await failure(ownerA, `update courses set status='published' where id=$1`, [c])).toMatch(/Submit the course for review/);
+  });
+
+  it("a submission can be withdrawn", async () => {
+    await q(ownerA, `select submit_course_for_review($1)`, [c]);
+    await q(ownerA, `select withdraw_course_submission($1)`, [c]);
+    expect((await state()).review_status).toBe("none");
+    expect(await failure(admin, `select review_course($1,'approve',null)`, [c])).toMatch(/not waiting/);
+  });
+});
+
+describe("lesson video links", () => {
+  it("the database accepts https links from known video hosts only", async () => {
+    const ok = ["https://www.youtube.com/watch?v=dQw4w9WgXcQ", "https://youtu.be/dQw4w9WgXcQ", "https://vimeo.com/123456", "https://iframe.mediadelivery.net/embed/1234/abcd-ef01-2345"];
+    for (const url of ok) expect(await failure(ownerA, `update lessons set video_url=$1 where id=$2`, [url, lessonPaid]), url).toBeNull();
+    for (const url of ["http://www.youtube.com/watch?v=dQw4w9WgXcQ", "https://evil.example/x", "javascript:alert(1)", "https://youtube.com.evil.example/a", "https://www.youtube.com/watch?v=a b"]) {
+      expect(await failure(ownerA, `update lessons set video_url=$1 where id=$2`, [url, lessonPaid]), url).toMatch(/check constraint/);
+    }
   });
 });

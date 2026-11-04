@@ -56,11 +56,28 @@ export async function setCourseStatus(fd: FormData) {
   const { l, supabase, id, home } = await withCourse(fd, "id");
   if (!id || !home) return finish(l, "/academy", "error", NOT_FOUND_OR_DENIED);
   const status = String(fd.get("status"));
-  if (status !== "draft" && status !== "published" && status !== "archived") return finish(l, home.manage, "error", "Choose a status.");
+  // Publishing is a platform decision: staff submit for review instead (see submitCourseForReview).
+  if (status !== "draft" && status !== "archived") return finish(l, home.manage, "error", "Submit the course for review to publish it.");
   const { data, error } = await supabase.from("courses").update({ status }).eq("id", id).select("id");
   if (error) return finish(l, home.manage, "error", courseErrorMessage(error));
   if (!data?.length) return finish(l, home.manage, "error", NOT_FOUND_OR_DENIED);
-  return finish(l, home.manage, "notice", status === "published" ? "Published. Students can now see it." : status === "draft" ? "Moved back to draft." : "Archived. It is hidden from students.");
+  return finish(l, home.manage, "notice", status === "draft" ? "Moved back to draft. Submit it for review to publish it again." : "Archived. It is hidden from students.");
+}
+
+export async function submitCourseForReview(fd: FormData) {
+  const { l, supabase, id, home } = await withCourse(fd, "id");
+  if (!id || !home) return finish(l, "/academy", "error", NOT_FOUND_OR_DENIED);
+  const { error } = await supabase.rpc("submit_course_for_review", { p_course: id });
+  if (error) return finish(l, home.manage, "error", courseErrorMessage(error));
+  return finish(l, home.manage, "notice", "Submitted. A platform administrator will review it before it goes live.");
+}
+
+export async function withdrawCourseSubmission(fd: FormData) {
+  const { l, supabase, id, home } = await withCourse(fd, "id");
+  if (!id || !home) return finish(l, "/academy", "error", NOT_FOUND_OR_DENIED);
+  const { error } = await supabase.rpc("withdraw_course_submission", { p_course: id });
+  if (error) return finish(l, home.manage, "error", courseErrorMessage(error));
+  return finish(l, home.manage, "notice", "Submission withdrawn. The course is a draft again.");
 }
 
 export async function addModule(fd: FormData) {

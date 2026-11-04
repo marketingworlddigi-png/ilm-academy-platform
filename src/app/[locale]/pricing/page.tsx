@@ -6,6 +6,7 @@ import { createPublicClient } from "@/lib/supabase/public";
 import { listActivePlans } from "@/modules/payments/queries";
 import { formatPkr, periodLabel } from "@/modules/payments/format";
 import { PlanAction } from "@/components/plan-action";
+import { FreePlanAction } from "@/components/free-plan-action";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { Badge, Button, Card, EmptyState } from "@/components/ui";
 
@@ -49,7 +50,7 @@ export default async function PricingPage({ params }: PageProps<"/[locale]/prici
               <h2 className="text-lg font-semibold">Free</h2>
               <p className="mt-3 text-3xl font-bold">PKR 0</p>
               <p className="mt-3 text-sm text-muted">Every book and course marked Free, with an account.</p>
-              <Button href={href(locale, "/signup")} variant="outline" className="mt-6">Create account</Button>
+              <FreePlanAction signupHref={href(locale, "/signup")} learnHref={href(locale, "/learn")} />
             </Card>
             {plans.map((p) => {
               const best = p.duration_months === 12;

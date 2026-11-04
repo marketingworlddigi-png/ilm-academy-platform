@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { parseVideoUrl, VIDEO_HELP } from "./video";
 
 // Mirrors the checks in migration 12; the database re-checks everything.
 const optText = (max: number, msg: string) => z.string().trim().max(max, msg).optional().transform((v) => v || null);
@@ -21,11 +22,23 @@ export const moduleSchema = z.object({
 export const lessonSchema = z.object({
   title: z.string().trim().min(2, "Enter a lesson title").max(160, "Keep the title under 160 characters"),
   body: optText(20000, "Keep the lesson text under 20000 characters"),
+  video_url: z.string().trim().max(500, "Keep the video link under 500 characters").optional()
+    .refine((v) => !v || parseVideoUrl(v) !== null, `That video link is not supported. ${VIDEO_HELP}`)
+    .transform((v) => v || null),
   is_preview: z.preprocess((v) => v === "on" || v === "true", z.boolean()),
   resource_id: z.preprocess((v) => (v === "" || v == null ? null : v), z.uuid("Invalid book").nullable()),
 });
 
 export const COURSE_STATUS_LABEL: Record<string, string> = { draft: "Draft (hidden)", published: "Published", archived: "Archived (hidden)" };
+
+export const REVIEW_LABEL: Record<string, string> = {
+  none: "Not submitted", submitted: "Waiting for platform review", changes_requested: "Needs changes", approved: "Approved",
+};
+
+export const reviewDecisionSchema = z.object({
+  decision: z.enum(["approve", "changes"], { message: "Choose approve or needs changes" }),
+  note: z.string().trim().max(500, "Keep the note under 500 characters").optional().transform((v) => v || null),
+}).refine((v) => v.decision === "approve" || (v.note !== null && v.note.length >= 3), { message: "Tell the academy what to change", path: ["note"] });
 
 /** "Sarf Basics" -> "sarf-basics": a suggestion only. */
 export const suggestCourseSlug = (title: string): string =>

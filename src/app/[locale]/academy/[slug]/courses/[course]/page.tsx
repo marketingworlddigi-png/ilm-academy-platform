@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { href, isLocale } from "@/lib/i18n/config";
 import { requireUser } from "@/lib/auth/session";
-import { COURSE_STATUS_LABEL } from "@/modules/courses/schemas";
+import { COURSE_STATUS_LABEL, REVIEW_LABEL } from "@/modules/courses/schemas";
 import { Card, Flash, flashFrom } from "@/components/admin/ui";
-import { addLesson, addModule, deleteLesson, deleteModule, setCourseStatus, updateCourse, updateLesson } from "../../../../course-actions";
+import { addLesson, addModule, deleteLesson, deleteModule, setCourseStatus, submitCourseForReview, updateCourse, updateLesson, withdrawCourseSubmission } from "../../../../course-actions";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Manage course", robots: { index: false, follow: false } };
@@ -20,12 +20,12 @@ export default async function ManageCourse({ params, searchParams }: PageProps<"
   if (!academy) notFound();
   const { data: mine } = await supabase.from("memberships").select("role").eq("academy_id", academy.id).eq("user_id", user.id).eq("status", "active").in("role", ["academy_owner", "academy_admin"]);
   if (!mine?.length) notFound();
-  const { data: c } = await supabase.from("courses").select("id, slug, title, summary, description, status").eq("academy_id", academy.id).eq("slug", course).is("deleted_at", null).maybeSingle();
+  const { data: c } = await supabase.from("courses").select("id, slug, title, summary, description, status, review_status, review_note").eq("academy_id", academy.id).eq("slug", course).is("deleted_at", null).maybeSingle();
   if (!c) notFound();
 
   const [{ data: modules }, { data: lessons }, { data: books }] = await Promise.all([
     supabase.from("course_modules").select("id, title, position").eq("course_id", c.id).order("position"),
-    supabase.from("lessons").select("id, module_id, title, body, is_preview, resource_id, position").eq("course_id", c.id).order("position"),
+    supabase.from("lessons").select("id, module_id, title, body, is_preview, resource_id, video_url, position").eq("course_id", c.id).order("position"),
     supabase.from("resources").select("id, title").or(`academy_id.is.null,academy_id.eq.${academy.id}`).eq("status", "published").is("deleted_at", null).order("title").limit(200),
   ]);
   const hidden = (name = "course_id", value = c.id) => (<><input type="hidden" name="locale" value={locale} /><input type="hidden" name={name} value={value} /></>);
@@ -41,11 +41,16 @@ export default async function ManageCourse({ params, searchParams }: PageProps<"
       <p className="text-sm"><Link className="text-ink-soft underline" href={href(locale, `/academy/${academy.slug}/courses`)}>All courses</Link></p>
       <h1 className="mt-2 font-display text-3xl font-semibold">{c.title}</h1>
       <p className="mt-1 text-sm text-ink-soft">Status: <strong className="text-ink">{COURSE_STATUS_LABEL[c.status] ?? c.status}</strong>
+        {c.status !== "published" && <> · Review: <strong className="text-ink">{REVIEW_LABEL[c.review_status] ?? c.review_status}</strong></>}
         {c.status === "published" && <> · <Link className="underline" href={href(locale, `/courses/${academy.slug}/${c.slug}`)}>View public page</Link></>}</p>
       <Flash error={error} notice={notice} />
 
+      {c.review_status === "changes_requested" && c.review_note && (
+        <p role="status" className="mt-4 rounded-xl border border-line bg-surface p-3 text-sm"><strong>The reviewer asked for changes:</strong> {c.review_note}</p>
+      )}
       <div className="mt-4 flex flex-wrap gap-3">
-        {c.status !== "published" && <form action={setCourseStatus}>{hidden("id")}<input type="hidden" name="status" value="published" /><button className="btn btn-primary" type="submit">Publish</button></form>}
+        {c.status === "draft" && c.review_status !== "submitted" && <form action={submitCourseForReview}>{hidden("id")}<button className="btn btn-primary" type="submit">Submit for review</button></form>}
+        {c.status === "draft" && c.review_status === "submitted" && <form action={withdrawCourseSubmission}>{hidden("id")}<button className="btn btn-ghost" type="submit">Withdraw submission</button></form>}
         {c.status === "published" && <form action={setCourseStatus}>{hidden("id")}<input type="hidden" name="status" value="draft" /><button className="btn btn-ghost" type="submit">Unpublish</button></form>}
         {c.status !== "archived" && <form action={setCourseStatus}>{hidden("id")}<input type="hidden" name="status" value="archived" /><button className="btn btn-ghost" type="submit">Archive</button></form>}
       </div>
@@ -76,6 +81,7 @@ export default async function ManageCourse({ params, searchParams }: PageProps<"
                 {hidden("id", l.id)}
                 <div><label className="label" htmlFor={`t-${l.id}`}>Title</label><input className="field" id={`t-${l.id}`} name="title" defaultValue={l.title} required minLength={2} maxLength={160} /></div>
                 <div><label className="label" htmlFor={`b-${l.id}`}>Lesson text (plain text)</label><textarea className="field min-h-40" id={`b-${l.id}`} name="body" defaultValue={l.body ?? ""} maxLength={20000} /></div>
+                <div><label className="label" htmlFor={`v-${l.id}`}>Video link (optional)</label><input className="field" id={`v-${l.id}`} name="video_url" type="url" inputMode="url" maxLength={500} placeholder="https://www.youtube.com/watch?v=..." defaultValue={l.video_url ?? ""} /><p className="mt-1 text-xs text-ink-soft">YouTube, Vimeo or Bunny Stream, https only.</p></div>
                 <div><label className="label">Linked book</label>{bookSelect(l.resource_id)}</div>
                 <div className="flex flex-wrap items-center gap-4">
                   <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="is_preview" defaultChecked={l.is_preview} /> Free preview</label>
@@ -92,6 +98,7 @@ export default async function ManageCourse({ params, searchParams }: PageProps<"
               {hidden()}<input type="hidden" name="module_id" value={m.id} />
               <div><label className="label" htmlFor={`nt-${m.id}`}>Title</label><input className="field" id={`nt-${m.id}`} name="title" required minLength={2} maxLength={160} /></div>
               <div><label className="label" htmlFor={`nb-${m.id}`}>Lesson text (plain text)</label><textarea className="field min-h-32" id={`nb-${m.id}`} name="body" maxLength={20000} /></div>
+              <div><label className="label" htmlFor={`nv-${m.id}`}>Video link (optional)</label><input className="field" id={`nv-${m.id}`} name="video_url" type="url" inputMode="url" maxLength={500} placeholder="https://www.youtube.com/watch?v=..." /><p className="mt-1 text-xs text-ink-soft">YouTube, Vimeo or Bunny Stream, https only.</p></div>
               <div><label className="label">Linked book</label>{bookSelect(null)}</div>
               <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="is_preview" /> Free preview</label>
               <button className="btn btn-primary" type="submit">Add lesson</button>

@@ -7,7 +7,7 @@ export default async function AdminLayout({ children, params }: LayoutProps<"/[l
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   await requireSuperAdmin(locale); // pages re-check too: layouts are not re-run on client navigation
-  const items = [["/admin", "Overview"], ["/admin/boards", "Boards and levels"], ["/admin/subjects", "Subjects"], ["/admin/resources", "Resources"], ["/admin/academies", "Academies"], ["/admin/payments", "Payments"], ["/admin/plans", "Plans"], ["/admin/payment-methods", "Payment methods"]] as const;
+  const items = [["/admin", "Overview"], ["/admin/boards", "Boards and levels"], ["/admin/subjects", "Subjects"], ["/admin/resources", "Resources"], ["/admin/academies", "Academies"], ["/admin/courses", "Course review"], ["/admin/payments", "Payments"], ["/admin/plans", "Plans"], ["/admin/payment-methods", "Payment methods"]] as const;
   return (
     <>
       <nav aria-label="Admin" className="border-b border-line bg-paper-2">
