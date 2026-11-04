@@ -36,7 +36,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
             ))}
           </nav>
           <div className="flex items-center gap-2">
-            <HeaderAuth locale={locale} accountHref={href(locale, "/account")} loginHref={href(locale, "/login")} signupHref={href(locale, "/signup")} />
+            <HeaderAuth locale={locale} accountHref={href(locale, "/learn")} loginHref={href(locale, "/login")} signupHref={href(locale, "/signup")} />
           </div>
         </div>
       </div>
