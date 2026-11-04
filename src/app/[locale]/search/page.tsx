@@ -5,6 +5,7 @@ import { href, isLocale } from "@/lib/i18n/config";
 import { createPublicClient } from "@/lib/supabase/public";
 import { BOOK_COLUMNS } from "@/modules/library/queries";
 import { Card, CourseCard, EmptyState, PageHeader } from "@/components/ui";
+import { courseIsPremium } from "@/modules/courses/access";
 
 export const metadata: Metadata = { title: "Search", robots: { index: false } };
 
@@ -39,7 +40,7 @@ export default async function SearchPage({ params, searchParams }: PageProps<"/[
               <section className="mt-8">
                 <h2 className="text-xl font-bold">Courses</h2>
                 <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {courses.map((c) => <CourseCard key={c.id} href={href(locale, `/courses/${c.academy.slug}/${c.slug}`)} premium={false} title={c.title} byline={c.academy.name} meta={c.summary ?? undefined} />)}
+                  {courses.map((c) => <CourseCard key={c.id} href={href(locale, `/courses/${c.academy.slug}/${c.slug}`)} premium={courseIsPremium(c)} title={c.title} byline={c.academy.name} meta={c.summary ?? undefined} />)}
                 </ul>
               </section>
             )}

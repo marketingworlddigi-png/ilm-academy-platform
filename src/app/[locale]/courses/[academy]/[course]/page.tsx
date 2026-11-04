@@ -7,6 +7,7 @@ import { getSessionUser } from "@/lib/auth/session";
 import { createPublicClient } from "@/lib/supabase/public";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { Badge, Button, Card, EmptyState } from "@/components/ui";
+import { courseIsPremium } from "@/modules/courses/access";
 import { Flash, flashFrom } from "@/components/admin/ui";
 import { enrollInCourse, leaveCourse } from "../../../course-actions";
 
@@ -115,7 +116,7 @@ export default async function CoursePage({ params, searchParams }: PageProps<"/[
 
         <aside className="lg:sticky lg:top-24 lg:self-start">
           <Card className="space-y-4 p-5">
-            <p className="text-2xl font-bold">Free</p>
+            <p className="text-2xl font-bold">{courseIsPremium(c) ? "Premium" : "Free"}</p>
             {enrollBox}
             <p className="text-xs text-muted">Offered by {c.academy.name}. Sign in to save your progress.</p>
           </Card>

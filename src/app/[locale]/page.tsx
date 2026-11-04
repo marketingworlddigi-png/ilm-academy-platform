@@ -9,6 +9,7 @@ import { listActivePlans, type Plan } from "@/modules/payments/queries";
 import { formatPkr, periodLabel } from "@/modules/payments/format";
 import { Badge, Button, Card, CourseCard, DarjaCard } from "@/components/ui";
 import { ContinueCard } from "@/components/continue-card";
+import { courseIsPremium } from "@/modules/courses/access";
 
 export const revalidate = 300;
 
@@ -130,7 +131,7 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
             </div>
             <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {courses.map((c) => (
-                <CourseCard key={c.id} href={href(locale, `/courses/${c.academy.slug}/${c.slug}`)} premium={false}
+                <CourseCard key={c.id} href={href(locale, `/courses/${c.academy.slug}/${c.slug}`)} premium={courseIsPremium(c)}
                   title={c.title} byline={c.academy.name} meta={c.summary ?? undefined} />
               ))}
             </ul>
