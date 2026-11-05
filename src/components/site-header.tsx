@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "./logo";
 import { HeaderAuth } from "./header-auth";
 import { href, locales, type Locale } from "@/lib/i18n/config";
 
@@ -24,12 +25,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
       </div>
       <div className="border-b border-line bg-white">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-5 py-3">
-          <Link href={href(locale)} className="flex items-center gap-2 text-lg font-bold text-primary-dark">
-            <span aria-hidden="true" className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-primary-dark text-gold">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4z" /></svg>
-            </span>
-            Ilm Academy
-          </Link>
+          <Link href={href(locale)} aria-label="Ilm Academy home"><Logo /></Link>
           <nav aria-label="Primary" className="order-3 flex w-full items-center gap-5 overflow-x-auto text-sm sm:order-none sm:w-auto">
             {NAV.map(([p, label]) => (
               <Link key={p} href={href(locale, p)} className="whitespace-nowrap font-medium text-muted hover:text-ink">{label}</Link>

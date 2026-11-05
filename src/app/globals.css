@@ -47,11 +47,15 @@ html[lang^="ar"] body { font-family: var(--font-amiri), var(--font-jakarta), ser
 .arabic-title { font-family: var(--font-amiri), serif; line-height: 1.7; }
 :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
-/* Faint eight-point star tile for dark hero bands. A flat pattern in two tones, no gradient. */
+/* Dark hero band: solid brand green with one large mihrab arch (concentric outlines) anchored right. Flat, no gradient, no tiling. */
 .star-pattern {
   background-color: var(--primary-dark);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.07' stroke-width='1'%3E%3Cpath d='M36 6l6.5 15.5L58 28l-15.5 6.5L36 50l-6.5-15.5L14 28l15.5-6.5z'/%3E%3Cpath d='M36 14v28M22 28h28'/%3E%3C/g%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='640' viewBox='0 0 520 640' fill='none'%3E%3Cg stroke='%23e9c46a'%3E%3Cpath d='M20 640V260C20 120 128 20 260 20s240 100 240 240v380' stroke-opacity='.22' stroke-width='2'/%3E%3Cpath d='M70 640V270C70 150 154 70 260 70s190 80 190 200v370' stroke-opacity='.14' stroke-width='2'/%3E%3Cpath d='M120 640V280c0-100 60-160 140-160s140 60 140 160v360' stroke-opacity='.09' stroke-width='2'/%3E%3C/g%3E%3Ccircle cx='260' cy='48' r='6' fill='%23e9c46a' fill-opacity='.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 4% bottom;
+  background-size: auto 130%;
 }
+@media (max-width: 1023px) { .star-pattern { background-position: right -120px bottom; background-size: auto 100%; } }
 
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; border-radius: var(--radius-sm); padding: .65rem 1.1rem; font-weight: 600; font-size: .95rem; transition: background .15s, border-color .15s; cursor: pointer; }
 .btn-primary { background: var(--primary); color: #fff; }
