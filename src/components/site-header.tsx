@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "./logo";
+import { MobileMenu } from "./mobile-menu";
 import { HeaderAuth } from "./header-auth";
 import { href, locales, type Locale } from "@/lib/i18n/config";
 
@@ -9,8 +10,8 @@ const NAV = [["/library", "Library"], ["/courses", "Courses"], ["/pricing", "Pri
 // Static on purpose: no per-request auth lookup so public pages stay cacheable. "My learning" redirects to sign-in when needed.
 export function SiteHeader({ locale }: { locale: Locale }) {
   return (
-    <header>
-      <div className="bg-primary-dark text-white">
+    <header className="relative">
+      <div className="hidden bg-primary-dark text-white md:block">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-2 text-xs">
           <p className="hidden text-white/80 sm:block">Kanz-ul-Madaris and Tanzeem-ul-Madaris syllabus, organised year by year</p>
           <ul className="ms-auto flex items-center gap-4">
@@ -24,16 +25,19 @@ export function SiteHeader({ locale }: { locale: Locale }) {
         </div>
       </div>
       <div className="border-b border-line bg-white">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-5 py-3">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-x-6 px-5 py-3">
           <Link href={href(locale)} aria-label="Ilm Academy home"><Logo /></Link>
-          <nav aria-label="Primary" className="order-3 flex w-full items-center gap-5 overflow-x-auto text-sm sm:order-none sm:w-auto">
+          <nav aria-label="Primary" className="hidden items-center gap-5 text-sm md:flex">
             {NAV.map(([p, label]) => (
               <Link key={p} href={href(locale, p)} className="whitespace-nowrap font-medium text-muted hover:text-ink">{label}</Link>
             ))}
           </nav>
-          <div className="flex items-center gap-2">
+          <div className="hidden items-center gap-2 md:flex">
             <HeaderAuth locale={locale} accountHref={href(locale, "/learn")} loginHref={href(locale, "/login")} signupHref={href(locale, "/signup")} />
           </div>
+          <MobileMenu locale={locale} accountHref={href(locale, "/learn")} loginHref={href(locale, "/login")} signupHref={href(locale, "/signup")}
+            nav={NAV.map(([p, label]) => ({ href: href(locale, p), label }))}
+            langs={locales.map((l) => ({ href: href(l), code: l, label: LANG_LABEL[l], current: l === locale }))} />
         </div>
       </div>
     </header>
