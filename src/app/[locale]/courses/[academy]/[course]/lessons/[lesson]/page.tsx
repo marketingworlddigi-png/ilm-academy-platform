@@ -9,6 +9,7 @@ import { Badge, Button, Card, ProgressBar } from "@/components/ui";
 import { Flash, flashFrom } from "@/components/admin/ui";
 import { parseVideoUrl } from "@/modules/courses/video";
 import { LessonTabs } from "@/components/lesson-tabs";
+import { QaPanel } from "@/components/qa-panel";
 import { QuizPlayer, type LastAttempt } from "@/components/quiz-player";
 import { completeLesson } from "../../../../../learn-actions";
 
@@ -123,6 +124,7 @@ export default async function LessonPage({ params, searchParams }: PageProps<"/[
           )}
             </>) },
             ...(quiz ? [{ id: "quiz", label: "Quiz", panel: <QuizPlayer quiz={quiz} last={last} /> }] : []),
+            ...(user ? [{ id: "questions", label: "Questions", panel: <QaPanel lessonId={l.id} /> }] : []),
           ]} />
           {!user && (
             <p className="mt-8 text-sm text-muted"><Link className="font-semibold text-primary underline" href={`${href(locale, "/login")}?next=${encodeURIComponent(here)}`}>Sign in</Link> and enroll to open every lesson and save your progress.</p>

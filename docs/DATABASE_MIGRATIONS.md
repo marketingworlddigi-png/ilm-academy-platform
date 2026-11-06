@@ -23,7 +23,7 @@ All four are **additive** (CREATE only; no DROP, TRUNCATE or data deletion). The
 ## Migration 11: resubmit for review
 `20261104000011_resubmit_academy.sql` adds `resubmit_academy(uuid)` (owner only; needs_info or rejected back to pending; same 3-academy cap; audited) and replaces `academies_guard` in place so only that function can make the transition, through a transaction-local flag. No DROP, no data deleted.
 
-## Is it applied? Check query (migrations 5 to 17)
+## Is it applied? Check query (migrations 5 to 18)
 Run in the Supabase SQL editor. Every column must be `true`:
 ```sql
 select
@@ -47,7 +47,9 @@ select
   to_regprocedure('public.review_course(uuid,text,text)') is not null
     and exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'lessons' and column_name = 'video_url') as m16_course_review_video,
   to_regprocedure('public.submit_quiz_attempt(uuid,jsonb)') is not null
-    and to_regclass('public.quiz_options') is not null                                                         as m17_quizzes;
+    and to_regclass('public.quiz_options') is not null                                                         as m17_quizzes,
+  to_regprocedure('public.ask_question(uuid,text)') is not null
+    and to_regclass('public.lesson_answers') is not null                                                       as m18_lesson_qa;
 ```
 Add one clause per new migration.
 
@@ -80,6 +82,12 @@ Add one clause per new migration.
 - One quiz per lesson, single-choice, 50 questions and 6 options at most, one correct option per question.
 - Teachers (owner, admin, instructor) write quizzes in their own academy. The answer key is readable only by them and super admins.
 - Learners never read the quiz tables. `get_quiz` returns the quiz without the key; `submit_quiz_attempt` marks it on the server, stores the attempt and then returns the right answers. 30 attempts per quiz per day.
+
+## Migration 18: lesson questions and answers
+`20261109000018_lesson_qa.sql` adds `lesson_questions`, `lesson_answers`, `lesson_qa`, `ask_question`, `post_answer` and `set_qa_hidden`. Additive only. No DROP.
+- Read: anyone who can open the lesson, plus the academy's teachers and super admins. Post: enrolled learners and the academy's teachers. 10 questions and 30 answers per person per day.
+- Names are a first-name snapshot taken when posting, so profiles stay private.
+- Teachers hide and unhide posts (audited as `qa.hidden` / `qa.unhidden`). Hidden posts vanish for learners.
 
 ## Safety checklist before applying (I will run through this with you)
 1. Confirm the project URL host starts with the ref in `EXPECTED_SUPABASE_PROJECT_REF` and is the new `education-platform` project.
