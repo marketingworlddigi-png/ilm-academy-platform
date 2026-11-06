@@ -20,6 +20,9 @@ export async function completeLesson(fd: FormData) {
   if (!c || !a) return redirect(href(l, "/learn"));
   const base = `/courses/${a.slug}/${c.slug}`;
   revalidatePath(href(l, "/learn"));
-  if (error) return redirect(`${href(l, `${base}/lessons/${id.data}`)}?error=${encodeURIComponent("You need to enroll in this course to save progress.")}`);
+  if (error) {
+    const msg = error.code === "22023" ? error.message : "You need to enroll in this course to save progress.";
+    return redirect(`${href(l, `${base}/lessons/${id.data}`)}?error=${encodeURIComponent(msg)}`);
+  }
   return redirect(typeof next === "string" ? href(l, `${base}/lessons/${next}`) : `${href(l, base)}?notice=${encodeURIComponent("Course finished. Well done.")}`);
 }

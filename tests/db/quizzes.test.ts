@@ -104,3 +104,17 @@ describe("taking a quiz", () => {
     expect(await failure(student, `select submit_quiz_attempt($1,$2::jsonb)`, [quiz, answers(q1ok, q2ok)])).toMatch(/Too many attempts/);
   });
 });
+
+describe("quiz gate on completing a lesson", () => {
+  it("blocks Mark complete until the quiz is passed, never blocks lessons without a quiz", async () => {
+    const fresh = await newUser(db, "fresh");
+    await q(fresh, `select enroll_in_course($1)`, [course]);
+    expect(await failure(fresh, `select complete_lesson($1)`, [lesson])).toMatch(/Pass the lesson quiz/);
+    expect(await failure(fresh, `select complete_lesson($1)`, [lessonNoQuiz])).toBeNull();
+    await q(fresh, `select submit_quiz_attempt($1,$2::jsonb)`, [quiz, answers(q1bad, q2bad)]);
+    expect(await failure(fresh, `select complete_lesson($1)`, [lesson])).toMatch(/Pass the lesson quiz/);
+    await q(fresh, `select submit_quiz_attempt($1,$2::jsonb)`, [quiz, answers(q1ok, q2ok)]);
+    expect(await failure(fresh, `select complete_lesson($1)`, [lesson])).toBeNull();
+    expect(await failure(fresh, `select complete_lesson($1)`, [lesson])).toBeNull(); // still idempotent
+  });
+});

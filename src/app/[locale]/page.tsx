@@ -44,11 +44,13 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const db = createPublicClient();
-  const [boards, plans, coursesRes] = await Promise.all([
+  const [boards, plans, coursesRes, courseCount, academyCount] = await Promise.all([
     listBoards(db),
     listActivePlans(db),
     db.from("courses").select("id, slug, title, summary, academies!inner(slug, name)")
       .eq("status", "published").is("deleted_at", null).order("published_at", { ascending: false }).limit(3),
+    db.from("courses").select("id", { count: "exact", head: true }).eq("status", "published").is("deleted_at", null),
+    db.from("academies").select("id", { count: "exact", head: true }).eq("status", "active").is("deleted_at", null),
   ]);
   const board = boards[0] ?? null;
   const levels = board ? await listLevels(db, board.id) : [];
@@ -58,6 +60,13 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
   const chips = [...new Map(subjectLists.flatMap((xs, i) => xs.map((x) => [x.id, { ...x, levelSlug: levels[i].slug }] as const))).values()].slice(0, 6);
   const courses = (coursesRes.data ?? []).flatMap((c) => { const a = [c.academies].flat()[0]; return a ? [{ ...c, academy: a }] : []; });
   const saving = savingPercent(plans);
+  // Real totals only: a figure that is zero is left out rather than shown as "0".
+  const stats = [
+    { n: boards.length, label: boards.length === 1 ? "Board" : "Boards" },
+    { n: counts.reduce((a, b) => a + b, 0), label: "Syllabus subjects" },
+    { n: courseCount.count ?? 0, label: (courseCount.count ?? 0) === 1 ? "Published course" : "Published courses" },
+    { n: academyCount.count ?? 0, label: (academyCount.count ?? 0) === 1 ? "Approved academy" : "Approved academies" },
+  ].filter((x) => x.n > 0);
 
   return (
     <main>
@@ -91,6 +100,19 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
           <ContinueCard locale={locale} signupHref={href(locale, "/signup")} libraryHref={href(locale, "/library")} />
         </div>
       </section>
+
+      {stats.length > 1 && (
+        <section aria-label="Ilm Academy in numbers" className="border-b border-line bg-surface">
+          <dl className="mx-auto grid max-w-6xl grid-cols-2 gap-y-5 px-5 py-6 md:grid-cols-4">
+            {stats.map((x) => (
+              <div key={x.label} className="flex flex-col-reverse border-s-2 border-gold ps-4">
+                <dt className="text-sm text-muted">{x.label}</dt>
+                <dd className="text-3xl font-bold text-primary-dark">{x.n}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      )}
 
       {boards.length > 0 && (
         <section className="border-b border-line bg-white">

@@ -51,6 +51,9 @@ export default async function LessonPage({ params, searchParams }: PageProps<"/[
   const { data: lastRows } = quiz && user
     ? await supabase.from("quiz_attempts").select("score, total, percent, passed").eq("quiz_id", quiz.id).eq("user_id", user.id).order("created_at", { ascending: false }).limit(1)
     : { data: null };
+  const { count: passedCount } = quiz && user
+    ? await supabase.from("quiz_attempts").select("id", { count: "exact", head: true }).eq("quiz_id", quiz.id).eq("user_id", user.id).eq("passed", true)
+    : { count: 0 };
   const assignment = user ? ((await supabase.rpc("get_assignment", { p_lesson: l.id })).data as AssignmentData | null) : null;
   const last = (lastRows?.[0] ?? null) as LastAttempt;
   const enrolled = enrollment?.status === "active";
@@ -61,6 +64,7 @@ export default async function LessonPage({ params, searchParams }: PageProps<"/[
   const next = idx >= 0 ? outline[idx + 1] : undefined;
   const pr = (prog as { total_lessons: number; completed_lessons: number; percent: number }[] | null)?.[0];
   const isDone = doneIds.has(l.id);
+  const needsQuiz = !!quiz && !isDone && !passedCount;
   const video = parseVideoUrl(l.video_url);
   const lessonHref = (lid: string) => href(locale, `${base}/lessons/${lid}`);
 
@@ -141,9 +145,10 @@ export default async function LessonPage({ params, searchParams }: PageProps<"/[
             {prev ? <Button href={lessonHref(prev.lesson_id)} variant="outline">&larr; Previous</Button> : <span />}
             <div className="flex flex-wrap gap-3">
               {user && enrolled && (
-                <form action={completeLesson}>
+                <form action={completeLesson} className="flex flex-col items-end gap-1">
                   <input type="hidden" name="locale" value={locale} /><input type="hidden" name="lesson_id" value={l.id} />
-                  <Button type="submit">{next ? (isDone ? "Next lesson" : "Mark complete & continue") : isDone ? "Back to course" : "Mark complete & finish"}</Button>
+                  <Button type="submit" disabled={needsQuiz}>{next ? (isDone ? "Next lesson" : "Mark complete & continue") : isDone ? "Back to course" : "Mark complete & finish"}</Button>
+                  {needsQuiz && <p className="text-xs text-muted">Pass the quiz to continue.</p>}
                 </form>
               )}
               {!(user && enrolled) && next && <Button href={lessonHref(next.lesson_id)}>Next &rarr;</Button>}

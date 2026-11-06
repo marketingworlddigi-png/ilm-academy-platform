@@ -23,7 +23,7 @@ All four are **additive** (CREATE only; no DROP, TRUNCATE or data deletion). The
 ## Migration 11: resubmit for review
 `20261104000011_resubmit_academy.sql` adds `resubmit_academy(uuid)` (owner only; needs_info or rejected back to pending; same 3-academy cap; audited) and replaces `academies_guard` in place so only that function can make the transition, through a transaction-local flag. No DROP, no data deleted.
 
-## Is it applied? Check query (migrations 5 to 21)
+## Is it applied? Check query (migrations 5 to 22)
 Run in the Supabase SQL editor. Every column must be `true`:
 ```sql
 select
@@ -54,7 +54,8 @@ select
     and to_regclass('public.assignment_submissions') is not null                                               as m19_assignments,
   to_regprocedure('public.claim_certificate(uuid)') is not null
     and to_regclass('public.certificates') is not null                                                         as m20_certificates,
-  to_regclass('public.lesson_notes') is not null                                                               as m21_lesson_notes;
+  to_regclass('public.lesson_notes') is not null                                                               as m21_lesson_notes,
+  pg_get_functiondef('public.complete_lesson(uuid)'::regprocedure) like '%Pass the lesson quiz first%'            as m22_quiz_gate;
 ```
 Add one clause per new migration.
 
@@ -109,6 +110,9 @@ Add one clause per new migration.
 
 ## Migration 21: lesson notes
 `20261112000021_lesson_notes.sql` adds `lesson_notes`. Additive only. One private plain-text note per learner per lesson (up to 5000 characters). Only the author can read it, not even the academy's teachers, and only for lessons they can open.
+
+## Migration 22: quiz gate
+`20261113000022_quiz_gate.sql` replaces `complete_lesson` in place (same signature, grants kept). A lesson that has a quiz can be marked complete only after the learner has passed that quiz; lessons without a quiz, and lessons already completed, are unaffected. No table changes, no DROP.
 
 ## Safety checklist before applying (I will run through this with you)
 1. Confirm the project URL host starts with the ref in `EXPECTED_SUPABASE_PROJECT_REF` and is the new `education-platform` project.

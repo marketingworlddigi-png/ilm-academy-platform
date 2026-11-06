@@ -42,7 +42,8 @@ describe("earning it", () => {
   });
   it("needs every quiz passed as well", async () => {
     await q(student, `select complete_lesson($1)`, [l1]);
-    await q(student, `select complete_lesson($1)`, [l2]);
+    // Progress recorded before the quiz existed (the gate in complete_lesson stops this happening through the app).
+    await db.exec(`insert into lesson_progress (user_id, lesson_id, course_id, completed_at) values ('${student}','${l2}','${course}', now())`);
     expect((await status(student)).reason).toMatch(/every quiz/);
     await q(student, `select submit_quiz_attempt($1,$2::jsonb)`, [quiz, JSON.stringify({ [qid]: optWrong })]);
     expect((await status(student)).eligible).toBe(false);
@@ -51,7 +52,7 @@ describe("earning it", () => {
   });
   it("needs a real name on the profile", async () => {
     await q(nameless, `select complete_lesson($1)`, [l1]);
-    await q(nameless, `select complete_lesson($1)`, [l2]);
+    await db.exec(`insert into lesson_progress (user_id, lesson_id, course_id, completed_at) values ('${nameless}','${l2}','${course}', now())`);
     await q(nameless, `select submit_quiz_attempt($1,$2::jsonb)`, [quiz, JSON.stringify({ [qid]: optRight })]);
     expect(await failure(nameless, `select claim_certificate($1)`, [course])).toMatch(/full name/);
   });
