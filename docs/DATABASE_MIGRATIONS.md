@@ -23,7 +23,7 @@ All four are **additive** (CREATE only; no DROP, TRUNCATE or data deletion). The
 ## Migration 11: resubmit for review
 `20261104000011_resubmit_academy.sql` adds `resubmit_academy(uuid)` (owner only; needs_info or rejected back to pending; same 3-academy cap; audited) and replaces `academies_guard` in place so only that function can make the transition, through a transaction-local flag. No DROP, no data deleted.
 
-## Is it applied? Check query (migrations 5 to 16)
+## Is it applied? Check query (migrations 5 to 17)
 Run in the Supabase SQL editor. Every column must be `true`:
 ```sql
 select
@@ -45,7 +45,9 @@ select
   to_regprocedure('public.complete_lesson(uuid)') is not null
     and to_regclass('public.academy_invites') is not null                                                       as m15_teachers_progress,
   to_regprocedure('public.review_course(uuid,text,text)') is not null
-    and exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'lessons' and column_name = 'video_url') as m16_course_review_video;
+    and exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'lessons' and column_name = 'video_url') as m16_course_review_video,
+  to_regprocedure('public.submit_quiz_attempt(uuid,jsonb)') is not null
+    and to_regclass('public.quiz_options') is not null                                                         as m17_quizzes;
 ```
 Add one clause per new migration.
 
@@ -72,6 +74,12 @@ Add one clause per new migration.
 `20261107000016_course_review_and_video.sql` adds `lessons.video_url` (https and an allowlisted host only: YouTube, Vimeo, Bunny), review columns on `courses`, `submit_course_for_review`, `withdraw_course_submission` and `review_course`, and replaces `courses_guard` in place. No DROP, no data deleted.
 - Academies can no longer publish directly: Publish became "Submit for review". Only a super admin can approve (which publishes) or send back with a note. Every step is audited.
 - Courses already published keep running; their review status is `none`.
+
+## Migration 17: quizzes
+`20261108000017_quizzes.sql` adds `quizzes`, `quiz_questions`, `quiz_options`, `quiz_attempts`, `get_quiz` and `submit_quiz_attempt`. Additive only. No DROP.
+- One quiz per lesson, single-choice, 50 questions and 6 options at most, one correct option per question.
+- Teachers (owner, admin, instructor) write quizzes in their own academy. The answer key is readable only by them and super admins.
+- Learners never read the quiz tables. `get_quiz` returns the quiz without the key; `submit_quiz_attempt` marks it on the server, stores the attempt and then returns the right answers. 30 attempts per quiz per day.
 
 ## Safety checklist before applying (I will run through this with you)
 1. Confirm the project URL host starts with the ref in `EXPECTED_SUPABASE_PROJECT_REF` and is the new `education-platform` project.

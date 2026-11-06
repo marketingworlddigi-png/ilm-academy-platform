@@ -8,6 +8,8 @@ import { Breadcrumbs } from "@/components/breadcrumbs";
 import { Badge, Button, Card, ProgressBar } from "@/components/ui";
 import { Flash, flashFrom } from "@/components/admin/ui";
 import { parseVideoUrl } from "@/modules/courses/video";
+import { LessonTabs } from "@/components/lesson-tabs";
+import { QuizPlayer, type LastAttempt } from "@/components/quiz-player";
 import { completeLesson } from "../../../../../learn-actions";
 
 export const dynamic = "force-dynamic";
@@ -41,6 +43,12 @@ export default async function LessonPage({ params, searchParams }: PageProps<"/[
     user ? supabase.from("lesson_progress").select("lesson_id").eq("user_id", user.id).eq("course_id", c.id).not("completed_at", "is", null) : Promise.resolve({ data: [] }),
     user ? supabase.rpc("course_progress", { p_course: c.id }) : Promise.resolve({ data: null }),
   ]);
+  // The quiz comes through get_quiz(), which leaves out the answer key and returns null unless you can open this lesson.
+  const quiz = user ? ((await supabase.rpc("get_quiz", { p_lesson: l.id })).data as { id: string; title: string; pass_percent: number; questions: { id: string; prompt: string; options: { id: string; label: string }[] }[] } | null) : null;
+  const { data: lastRows } = quiz && user
+    ? await supabase.from("quiz_attempts").select("score, total, percent, passed").eq("quiz_id", quiz.id).eq("user_id", user.id).order("created_at", { ascending: false }).limit(1)
+    : { data: null };
+  const last = (lastRows?.[0] ?? null) as LastAttempt;
   const enrolled = enrollment?.status === "active";
   const outline = (outlineData ?? []) as OutlineRow[];
   const doneIds = new Set((done ?? []).map((d: { lesson_id: string }) => d.lesson_id));
@@ -104,13 +112,18 @@ export default async function LessonPage({ params, searchParams }: PageProps<"/[
                 sandbox="allow-scripts allow-same-origin allow-presentation allow-popups" />
             </div>
           )}
-          {/* Plain text only, never HTML. */}
+          <LessonTabs tabs={[
+            { id: "lesson", label: "Lesson", panel: (<>
+            {/* Plain text only, never HTML. */}
           {l.body ? <div className="whitespace-pre-line text-lg leading-relaxed">{l.body}</div> : <p className="text-muted">This lesson has no text.</p>}
           {book && (
             <Card className="mt-8 p-4 text-sm">
               Reading for this lesson: <Link className="font-semibold text-primary hover:underline" href={href(locale, `/books/${book.id}`)}>{book.title}</Link>
             </Card>
           )}
+            </>) },
+            ...(quiz ? [{ id: "quiz", label: "Quiz", panel: <QuizPlayer quiz={quiz} last={last} /> }] : []),
+          ]} />
           {!user && (
             <p className="mt-8 text-sm text-muted"><Link className="font-semibold text-primary underline" href={`${href(locale, "/login")}?next=${encodeURIComponent(here)}`}>Sign in</Link> and enroll to open every lesson and save your progress.</p>
           )}
