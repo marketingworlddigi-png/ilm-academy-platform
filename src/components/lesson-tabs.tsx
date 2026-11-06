@@ -19,7 +19,7 @@ export function LessonTabs({ tabs, initial }: { tabs: LessonTab[]; initial?: str
 
   return (
     <div>
-      <div role="tablist" aria-label="Lesson sections" className="mb-6 flex gap-1 overflow-x-auto border-b border-line">
+      <div role="tablist" aria-label="Lesson sections" className="mb-6 flex gap-1 overflow-x-auto overflow-y-hidden [scrollbar-width:thin] border-b border-line">
         {tabs.map((t, i) => (
           <button key={t.id} ref={(el) => { refs.current[t.id] = el; }} role="tab" type="button" id={`tab-${t.id}`} aria-selected={active === t.id}
             aria-controls={`panel-${t.id}`} tabIndex={active === t.id ? 0 : -1} onClick={() => setActive(t.id)} onKeyDown={(e) => move(e, i)}
