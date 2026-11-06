@@ -78,6 +78,11 @@ export default async function AcademyDashboard({ params, searchParams }: PagePro
         <p className="mt-3"><Link className="btn btn-primary" href={href(locale, `/academy/${academy.slug}/courses`)}>Manage courses</Link></p>
       </Card>
 
+      <Card title="Certificates" className="mt-8">
+        <p className="text-sm text-ink-soft">See the certificates your learners have earned, and withdraw one if it was issued wrongly.</p>
+        <p className="mt-3"><Link className="btn btn-ghost" href={href(locale, `/academy/${academy.slug}/certificates`)}>View certificates</Link></p>
+      </Card>
+
       <Card title="Content" className="mt-8">
         {(resources ?? []).length === 0 ? <p className="text-sm text-ink-soft">No content yet. Uploading and managing your own books comes next.</p> : (
           <ul className="divide-y divide-line text-sm">

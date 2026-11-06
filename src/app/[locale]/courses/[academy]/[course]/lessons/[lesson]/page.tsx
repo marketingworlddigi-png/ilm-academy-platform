@@ -10,6 +10,7 @@ import { Flash, flashFrom } from "@/components/admin/ui";
 import { parseVideoUrl } from "@/modules/courses/video";
 import { LessonTabs } from "@/components/lesson-tabs";
 import { AssignmentPanel, type AssignmentData } from "@/components/assignment-panel";
+import { NotesPanel } from "@/components/notes-panel";
 import { QaPanel } from "@/components/qa-panel";
 import { QuizPlayer, type LastAttempt } from "@/components/quiz-player";
 import { completeLesson } from "../../../../../learn-actions";
@@ -119,14 +120,14 @@ export default async function LessonPage({ params, searchParams }: PageProps<"/[
             { id: "lesson", label: "Lesson", panel: (<>
             {/* Plain text only, never HTML. */}
           {l.body ? <div className="whitespace-pre-line text-lg leading-relaxed">{l.body}</div> : <p className="text-muted">This lesson has no text.</p>}
-          {book && (
-            <Card className="mt-8 p-4 text-sm">
-              Reading for this lesson: <Link className="font-semibold text-primary hover:underline" href={href(locale, `/books/${book.id}`)}>{book.title}</Link>
-            </Card>
-          )}
             </>) },
+            ...(book ? [{ id: "book", label: "Book", panel: (
+              <Card className="p-4 text-sm">
+                Reading for this lesson: <Link className="font-semibold text-primary hover:underline" href={href(locale, `/books/${book.id}`)}>{book.title}</Link>
+              </Card>) }] : []),
             ...(quiz ? [{ id: "quiz", label: "Quiz", panel: <QuizPlayer quiz={quiz} last={last} /> }] : []),
             ...(assignment ? [{ id: "assignment", label: "Assignment", panel: <AssignmentPanel assignment={assignment} /> }] : []),
+            ...(user ? [{ id: "notes", label: "Notes", panel: <NotesPanel lessonId={l.id} userId={user.id} /> }] : []),
             ...(user ? [{ id: "questions", label: "Questions", panel: <QaPanel lessonId={l.id} /> }] : []),
           ]} />
           {!user && (
