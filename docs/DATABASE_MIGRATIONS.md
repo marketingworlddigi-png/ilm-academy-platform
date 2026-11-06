@@ -23,7 +23,7 @@ All four are **additive** (CREATE only; no DROP, TRUNCATE or data deletion). The
 ## Migration 11: resubmit for review
 `20261104000011_resubmit_academy.sql` adds `resubmit_academy(uuid)` (owner only; needs_info or rejected back to pending; same 3-academy cap; audited) and replaces `academies_guard` in place so only that function can make the transition, through a transaction-local flag. No DROP, no data deleted.
 
-## Is it applied? Check query (migrations 5 to 19)
+## Is it applied? Check query (migrations 5 to 20)
 Run in the Supabase SQL editor. Every column must be `true`:
 ```sql
 select
@@ -51,7 +51,9 @@ select
   to_regprocedure('public.ask_question(uuid,text)') is not null
     and to_regclass('public.lesson_answers') is not null                                                       as m18_lesson_qa,
   to_regprocedure('public.submit_assignment(uuid,text)') is not null
-    and to_regclass('public.assignment_submissions') is not null                                               as m19_assignments;
+    and to_regclass('public.assignment_submissions') is not null                                               as m19_assignments,
+  to_regprocedure('public.claim_certificate(uuid)') is not null
+    and to_regclass('public.certificates') is not null                                                         as m20_certificates;
 ```
 Add one clause per new migration.
 
@@ -96,6 +98,13 @@ Add one clause per new migration.
 - One assignment per lesson, written by the academy's teachers. Learners hand in plain text (up to 5000 characters), only if enrolled, and can replace it until it is marked.
 - Teachers mark with a whole-number score up to the assignment's total plus feedback (audited as `assignment.graded`). Marked work is locked for the learner.
 - Learners read only their own submission; teachers see names as first names only.
+
+## Migration 20: certificates
+`20261111000020_certificates.sql` adds `certificates`, `certificate_status`, `claim_certificate`, `verify_certificate` and `revoke_certificate`. Additive only. No DROP.
+- Earned when the learner is enrolled, has completed every lesson and passed every quiz in the course. Assignments do not block it.
+- Name, course and academy are copied at issue time. The learner needs a full name on their profile first.
+- `verify_certificate(code)` is callable without signing in and returns only name, course, academy and date. The 12-character code comes from a random UUID.
+- Academy owners/admins and super admins can withdraw a certificate with a reason (audited). A withdrawn code stops verifying and is not re-issued.
 
 ## Safety checklist before applying (I will run through this with you)
 1. Confirm the project URL host starts with the ref in `EXPECTED_SUPABASE_PROJECT_REF` and is the new `education-platform` project.

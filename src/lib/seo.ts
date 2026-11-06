@@ -24,6 +24,7 @@ export function alternatesFor(locale: Locale, path: string) {
 export const DISALLOWED_PATHS = [
   ...["account", "admin", "login", "signup", "forgot-password", "reset-password", "checkout", "academy"].map((p) => `/*/${p}`),
   "/*/books/*/read",
+  "/*/certificates/",
   "/*/courses/*/*/lessons/",
   "/auth/",
   "/api/",

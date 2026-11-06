@@ -10,6 +10,7 @@ import { Badge, Button, Card, EmptyState } from "@/components/ui";
 import { courseIsPremium } from "@/modules/courses/access";
 import { Flash, flashFrom } from "@/components/admin/ui";
 import { enrollInCourse, leaveCourse } from "../../../course-actions";
+import { claimCertificate } from "../../../certificate-actions";
 
 type OutlineRow = { lesson_id: string; module_id: string; title: string; is_preview: boolean };
 
@@ -46,6 +47,7 @@ export default async function CoursePage({ params, searchParams }: PageProps<"/[
     user ? supabase.from("enrollments").select("status").eq("course_id", c.id).eq("user_id", user.id).maybeSingle() : Promise.resolve({ data: null }),
   ]);
   const enrolled = enrollment?.status === "active";
+  const cert = enrolled ? ((await supabase.rpc("certificate_status", { p_course: c.id })).data as { eligible: boolean; issued: boolean; code: string | null; reason: string | null } | null) : null;
   const lessonsOf = (moduleId: string) => ((outline ?? []) as OutlineRow[]).filter((l) => l.module_id === moduleId);
   const here = href(locale, `/courses/${c.academy.slug}/${c.slug}`);
   const hidden = (
@@ -61,6 +63,10 @@ export default async function CoursePage({ params, searchParams }: PageProps<"/[
     <form action={leaveCourse} className="space-y-3">
       {hidden}
       <Badge tone="green">You are enrolled</Badge>
+      {cert?.issued && cert.code && <p className="text-sm"><Link className="font-semibold text-primary underline" href={href(locale, `/certificates/${cert.code}`)}>View your certificate</Link></p>}
+      {cert && !cert.issued && (cert.eligible
+        ? <button className="btn btn-primary w-full" type="submit" formAction={claimCertificate}>Get your certificate</button>
+        : cert.reason && <p className="text-sm text-muted">Certificate: {cert.reason.toLowerCase()}.</p>)}
       <button className="btn btn-ghost w-full" type="submit">Leave course</button>
     </form>
   ) : user ? (

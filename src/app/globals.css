@@ -67,3 +67,7 @@ html[lang^="ar"] body { font-family: var(--font-amiri), var(--font-jakarta), ser
 .field:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(14,90,67,.15); }
 .label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: .3rem; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+@media print {
+  header, footer, nav { display: none !important; }
+}
