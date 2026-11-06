@@ -21,7 +21,7 @@ export function CourseFilter({ courses }: { courses: FilterCourse[] }) {
         <div role="group" aria-label="Filter courses" className="mt-8 flex gap-2 overflow-x-auto pb-1">
           {chips.map(([k, label]) => (
             <button key={k} type="button" aria-pressed={key === k} onClick={() => setKey(k)}
-              className={`whitespace-nowrap rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors ${key === k ? "border-primary bg-primary text-white" : "border-line bg-white text-ink hover:border-primary hover:text-primary"}`}>{label}</button>
+              className={`whitespace-nowrap rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors ${key === k ? "border-primary bg-primary text-white" : "border-line bg-sheet text-ink hover:border-primary hover:text-primary"}`}>{label}</button>
           ))}
         </div>
       )}

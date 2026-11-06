@@ -38,7 +38,7 @@ export function QuizPlayer({ quiz, last }: { quiz: Quiz; last: LastAttempt }) {
         {last && !result && <> · last try: {last.score}/{last.total} ({last.passed ? "passed" : "not passed"})</>}</p>
 
       {result && (
-        <div role="status" className={`mt-5 rounded-[14px] border p-4 ${result.passed ? "border-primary bg-surface" : "border-line bg-white"}`}>
+        <div role="status" className={`mt-5 rounded-[14px] border p-4 ${result.passed ? "border-primary bg-surface" : "border-line bg-sheet"}`}>
           <p className="text-lg font-bold">{result.passed ? "Passed" : "Not passed yet"}: {result.score} of {result.total} ({result.percent}%)</p>
           <p className="mt-1 text-sm text-muted">{result.passed ? "Well done." : `You need ${result.pass_percent}% to pass. Check the answers below and try again.`}</p>
           <div className="mt-3"><Button type="button" variant="outline" onClick={retry}>Try again</Button></div>

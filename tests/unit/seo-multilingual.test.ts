@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 // The layout loads Google fonts and global CSS at import time; neither exists under vitest.
 const font = () => ({ variable: "" });
-vi.mock("next/font/google", () => ({ Plus_Jakarta_Sans: font, Noto_Nastaliq_Urdu: font, Amiri: font }));
+vi.mock("next/font/google", () => ({ Instrument_Sans: font, Instrument_Serif: font, Noto_Nastaliq_Urdu: font, Amiri: font }));
 vi.mock("@/components/site-header", () => ({ SiteHeader: () => null }));
 vi.mock("@/components/site-footer", () => ({ SiteFooter: () => null }));
 vi.mock("@/components/read-action", () => ({ ReadAction: () => null }));

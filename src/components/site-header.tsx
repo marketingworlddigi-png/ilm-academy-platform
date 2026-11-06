@@ -10,7 +10,7 @@ const NAV = [["/library", "Library"], ["/courses", "Courses"], ["/pricing", "Pri
 // Static on purpose: no per-request auth lookup so public pages stay cacheable. "My learning" redirects to sign-in when needed.
 export function SiteHeader({ locale }: { locale: Locale }) {
   return (
-    <header className="relative">
+    <header className="sticky top-0 z-40">
       <div className="hidden bg-primary-dark text-white md:block">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-2 text-xs">
           <p className="hidden text-white/80 sm:block">Kanz-ul-Madaris and Tanzeem-ul-Madaris syllabus, organised year by year</p>
@@ -24,12 +24,12 @@ export function SiteHeader({ locale }: { locale: Locale }) {
           </ul>
         </div>
       </div>
-      <div className="border-b border-line bg-white">
+      <div className="border-b border-line bg-surface/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-x-6 px-5 py-3">
           <Link href={href(locale)} aria-label="Ilm Academy home"><Logo /></Link>
-          <nav aria-label="Primary" className="hidden items-center gap-5 text-sm md:flex">
+          <nav aria-label="Primary" className="hidden items-center gap-7 text-[0.95rem] md:flex">
             {NAV.map(([p, label]) => (
-              <Link key={p} href={href(locale, p)} className="whitespace-nowrap font-medium text-muted hover:text-ink">{label}</Link>
+              <Link key={p} href={href(locale, p)} className="relative whitespace-nowrap py-1 font-semibold text-ink/75 transition-colors after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:origin-left after:scale-x-0 after:bg-gold after:transition-transform hover:text-ink hover:after:scale-x-100">{label}</Link>
             ))}
           </nav>
           <div className="hidden items-center gap-2 md:flex">

@@ -49,7 +49,7 @@ export default async function AccountPage({ params, searchParams }: PageProps<"/
         </div>
       </section>
       <div className="mx-auto max-w-6xl space-y-10 px-5 py-10">
-        {error && <p role="alert" className="rounded-[10px] border border-danger/40 bg-white p-3 text-sm text-danger">{error}</p>}
+        {error && <p role="alert" className="rounded-[10px] border border-danger/40 bg-sheet p-3 text-sm text-danger">{error}</p>}
 
         <div className="grid gap-4 sm:grid-cols-3">
           <StatCard label="Plan" value={active ? "Premium" : "Free"} hint={active ? (active.expires_at ? `Active until ${fmt(active.expires_at)}` : "Active with no end date") : "Upgrade any time from Pricing"} />

@@ -34,7 +34,7 @@ export default async function CertificatePage({ params }: PageProps<"/[locale]/c
       <p className="mb-4 flex items-center gap-2 text-sm font-semibold text-primary print:hidden" role="status">
         <span aria-hidden="true">✓</span> Valid certificate. Issued by {c.academy} on {date}.
       </p>
-      <section className="rounded-[18px] border-4 border-double border-gold bg-white p-6 text-center shadow-sm sm:p-12 print:border-2 print:shadow-none" aria-label="Certificate of completion">
+      <section className="rounded-[18px] border-4 border-double border-gold bg-sheet p-6 text-center shadow-sm sm:p-12 print:border-2 print:shadow-none" aria-label="Certificate of completion">
         <div className="flex justify-center"><Logo /></div>
         <p className="mt-8 text-sm font-bold uppercase tracking-[0.25em] text-muted">Certificate of completion</p>
         <p className="mt-6 text-muted">This certifies that</p>

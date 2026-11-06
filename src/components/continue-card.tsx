@@ -31,7 +31,7 @@ export function ContinueCard({ locale, signupHref, libraryHref }: { locale: stri
     return () => { alive = false; };
   }, [locale]);
 
-  const shell = "rounded-[14px] bg-white p-5 text-ink shadow-sm";
+  const shell = "rounded-[14px] bg-sheet p-5 text-ink shadow-sm";
   if (state === "loading") return <div aria-hidden="true" className={`${shell} h-44`} />;
   if (state === "guest" || state === "empty") {
     return (

@@ -1,15 +1,19 @@
 @import "tailwindcss";
 
-/* Design tokens from the Ilm Academy redesign canvas. Gold is decoration and highlight only, never text on a light surface.
-   The older names (paper, ink-soft, brand, accent) stay as aliases so existing pages take the new theme. */
+/* Ilm Academy design system: "illuminated manuscript". Lapis blue ink, gold leaf and a little vermilion on parchment.
+   Gold-deep is the only gold safe as text on parchment; bright gold is for fills, rules and text on dark lapis.
+   The older names (paper, ink-soft, brand, accent) stay as aliases so every existing page takes the new theme. */
 :root {
-  --ink: #10251e;
-  --primary: #0e5a43;
-  --primary-dark: #0a3d2e;
-  --gold: #e9c46a;
-  --surface: #f4f7f5;
-  --line: #dde6e1;
-  --muted: #4b5e57;
+  --ink: #151826;
+  --primary: #1c3d7a;
+  --primary-dark: #0e2152;
+  --gold: #e3b94d;
+  --gold-deep: #8a6210;
+  --vermilion: #b4412b;
+  --surface: #f6efdd;
+  --paper: #fffcf3;
+  --line: #e3d8bc;
+  --muted: #585a68;
   --danger: #a32222;
   --radius-sm: 10px;
   --radius-md: 14px;
@@ -21,53 +25,84 @@
   --color-primary: var(--primary);
   --color-primary-dark: var(--primary-dark);
   --color-gold: var(--gold);
+  --color-gold-deep: var(--gold-deep);
+  --color-vermilion: var(--vermilion);
   --color-surface: var(--surface);
+  --color-paper: var(--surface);
+  --color-sheet: var(--paper);
   --color-line: var(--line);
   --color-muted: var(--muted);
   --color-danger: var(--danger);
-  /* aliases for pre-redesign class names */
-  --color-paper: var(--surface);
-  --color-paper-2: #e9f0ec;
+  --color-paper-2: #efe5cc;
   --color-ink-soft: var(--muted);
   --color-brand: var(--primary);
   --color-brand-ink: #ffffff;
   --color-accent: var(--gold);
   --radius-lg: 14px;
   --radius-xl: 18px;
-  --font-sans: var(--font-jakarta), system-ui, sans-serif;
-  --font-display: var(--font-jakarta), system-ui, sans-serif;
+  --font-sans: var(--font-sans-body), system-ui, sans-serif;
+  --font-display: var(--font-serif-display), Georgia, serif;
 }
 
-html { background: var(--surface); color: var(--ink); }
+/* Parchment with a faint paper grain (inline SVG noise, about 1 KB, no request). */
+html {
+  background-color: var(--surface);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .28 0 0 0 0 .12 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  color: var(--ink);
+}
 body { font-family: var(--font-sans); }
+/* Headlines are set in the serif at its single (regular) weight, so no faux bold is ever synthesised. */
+h1, h2, .font-display { font-family: var(--font-display); font-weight: 400; letter-spacing: -0.012em; }
+h1 { line-height: 1.02; }
 /* Nastaliq sits low and tall: it needs generous line height. Arabic uses Amiri, which also carries Latin fallbacks. */
-html[lang^="ur"] body { font-family: var(--font-urdu), var(--font-jakarta), serif; line-height: 2.1; }
-html[lang^="ar"] body { font-family: var(--font-amiri), var(--font-jakarta), serif; line-height: 1.9; }
+html[lang^="ur"] body { font-family: var(--font-urdu), var(--font-sans-body), serif; line-height: 2.1; }
+html[lang^="ar"] body { font-family: var(--font-amiri), var(--font-sans-body), serif; line-height: 1.9; }
+html[lang^="ur"] :is(h1, h2, .font-display) { font-family: var(--font-urdu), serif; font-weight: 700; letter-spacing: 0; line-height: 1.8; }
+html[lang^="ar"] :is(h1, h2, .font-display) { font-family: var(--font-amiri), serif; font-weight: 700; letter-spacing: 0; line-height: 1.6; }
 .urdu { font-family: var(--font-urdu), serif; line-height: 2.1; }
 .arabic-title { font-family: var(--font-amiri), serif; line-height: 1.7; }
 :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+::selection { background: var(--gold); color: var(--ink); }
 
-/* Dark hero band: solid brand green with one large mihrab arch (concentric outlines) anchored right. Flat, no gradient, no tiling. */
-.star-pattern {
+/* Dark lapis band with a tiled eight-point star (khatam) in fine gold lines. Flat colour, no gradient. */
+.khatam {
   background-color: var(--primary-dark);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='640' viewBox='0 0 520 640' fill='none'%3E%3Cg stroke='%23e9c46a'%3E%3Cpath d='M20 640V260C20 120 128 20 260 20s240 100 240 240v380' stroke-opacity='.22' stroke-width='2'/%3E%3Cpath d='M70 640V270C70 150 154 70 260 70s190 80 190 200v370' stroke-opacity='.14' stroke-width='2'/%3E%3Cpath d='M120 640V280c0-100 60-160 140-160s140 60 140 160v360' stroke-opacity='.09' stroke-width='2'/%3E%3C/g%3E%3Ccircle cx='260' cy='48' r='6' fill='%23e9c46a' fill-opacity='.5'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 4% bottom;
-  background-size: auto 130%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96' fill='none'%3E%3Cg stroke='%23e3b94d' stroke-opacity='.16' stroke-width='1.2'%3E%3Cpath d='M48 12 58 38 84 48 58 58 48 84 38 58 12 48 38 38Z'/%3E%3Crect x='24' y='24' width='48' height='48' transform='rotate(45 48 48)'/%3E%3Cpath d='M0 0 12 12M96 0 84 12M0 96 12 84M96 96 84 84'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 96px 96px;
 }
-@media (max-width: 1023px) { .star-pattern { background-position: right -120px bottom; background-size: auto 100%; } }
+.khatam-soft { background-image: none; }
+
+/* Dotted leader between a contents entry and its page, like the fihrist of a printed kitab. */
+.leader { flex: 1; min-width: 1.5rem; align-self: end; margin-bottom: .45em; border-bottom: 2px dotted color-mix(in srgb, var(--gold-deep) 55%, transparent); }
+
+/* Rule with a diamond in the middle, used between ornamental blocks. */
+.ornament { display: flex; align-items: center; gap: .75rem; color: var(--gold-deep); }
+.ornament::before, .ornament::after { content: ""; height: 1px; flex: 1; background: currentColor; opacity: .5; }
+.ornament > span { width: .5rem; height: .5rem; transform: rotate(45deg); background: currentColor; }
 
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; border-radius: var(--radius-sm); padding: .65rem 1.1rem; font-weight: 600; font-size: .95rem; transition: background .15s, border-color .15s; cursor: pointer; }
 .btn-primary { background: var(--primary); color: #fff; }
 .btn-primary:hover { background: var(--primary-dark); }
-.btn-ghost { border: 1px solid var(--line); background: #fff; color: var(--ink); }
+.btn-ghost { border: 1px solid var(--line); background: var(--paper); color: var(--ink); }
 .btn:disabled { opacity: .55; cursor: not-allowed; }
 .btn-ghost:hover { border-color: var(--muted); }
-.field { width: 100%; border: 1px solid var(--line); background: #fff; border-radius: var(--radius-sm); padding: .65rem .8rem; font-size: 1rem; }
-.field:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(14,90,67,.15); }
+.field { width: 100%; border: 1px solid var(--line); background: var(--paper); border-radius: var(--radius-sm); padding: .65rem .8rem; font-size: 1rem; }
+.field:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(28,61,122,.16); }
 .label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: .3rem; }
+
+/* Motion: a staggered rise on load for the hero, and a scroll-linked reveal where the browser supports it (otherwise content simply shows). */
+@keyframes reveal-in { from { opacity: .15; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+@keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes settle { from { opacity: 0; transform: translateY(26px) rotate(3deg); } to { opacity: 1; transform: translateY(0) rotate(-1.5deg); } }
+.rise { animation: rise .8s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(var(--i, 0) * 110ms); }
+@supports (animation-timeline: view()) {
+  .reveal { animation: reveal-in linear both; animation-timeline: view(); animation-range: entry 0% entry 55%; }
+}
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 
 @media print {
   header, footer, nav { display: none !important; }
+  html { background: #fff; }
 }
+
+.settle { animation: settle 1s cubic-bezier(.2,.7,.2,1) .25s both; transform: rotate(-1.5deg); }

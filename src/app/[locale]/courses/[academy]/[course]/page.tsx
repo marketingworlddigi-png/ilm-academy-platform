@@ -103,7 +103,7 @@ export default async function CoursePage({ params, searchParams }: PageProps<"/[
                   <h3 className="flex items-center gap-3 font-semibold">
                     <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-sm text-white">{idx + 1}</span>{m.title}
                   </h3>
-                  <ul className="mt-2 divide-y divide-line overflow-hidden rounded-[14px] border border-line bg-white text-sm">
+                  <ul className="mt-2 divide-y divide-line overflow-hidden rounded-[14px] border border-line bg-sheet text-sm">
                     {lessonsOf(m.id).map((l) => (
                       <li key={l.lesson_id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
                         {enrolled || l.is_preview

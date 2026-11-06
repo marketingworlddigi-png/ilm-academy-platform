@@ -6,10 +6,10 @@ const cx = (...parts: Array<string | false | null | undefined>) => parts.filter(
 type Variant = "primary" | "outline" | "dark" | "gold" | "ghost";
 const VARIANT: Record<Variant, string> = {
   primary: "bg-primary text-white hover:bg-primary-dark",
-  outline: "border border-line bg-white text-ink hover:border-muted",
+  outline: "border border-line bg-sheet text-ink hover:border-primary hover:text-primary",
   dark: "bg-primary-dark text-white hover:bg-ink",
-  gold: "bg-gold text-ink hover:brightness-95",
-  ghost: "text-primary hover:bg-surface",
+  gold: "bg-gold text-ink hover:brightness-105 hover:shadow-[0_0_0_4px_rgba(227,185,77,0.28)]",
+  ghost: "text-primary hover:bg-paper-2",
 };
 const SIZE = { sm: "px-3 py-1.5 text-sm", md: "px-4 py-2.5 text-[0.95rem]", lg: "px-6 py-3 text-base" } as const;
 
@@ -20,7 +20,7 @@ type ButtonProps = { variant?: Variant; size?: keyof typeof SIZE; className?: st
 
 /** One button for links and form buttons. Pass href for a link, otherwise it is a <button>. */
 export function Button({ variant = "primary", size = "md", className, children, ...rest }: ButtonProps) {
-  const cls = cx("inline-flex items-center justify-center gap-2 rounded-[10px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-55", VARIANT[variant], SIZE[size], className);
+  const cls = cx("inline-flex items-center justify-center gap-2 rounded-[10px] font-semibold transition-[background-color,box-shadow,border-color,color] duration-200 disabled:cursor-not-allowed disabled:opacity-55", VARIANT[variant], SIZE[size], className);
   if ("href" in rest && rest.href !== undefined) return <Link href={rest.href} className={cls}>{children}</Link>;
   const { href: _h, ...btn } = rest as ButtonHTMLAttributes<HTMLButtonElement> & { href?: undefined };
   void _h;
@@ -29,13 +29,13 @@ export function Button({ variant = "primary", size = "md", className, children, 
 
 /** White panel with a 1px line border. No shadow, no gradient. */
 export function Card({ children, className, as: Tag = "div" }: { children: ReactNode; className?: string; as?: "div" | "section" | "article" | "li" | "aside" }) {
-  return <Tag className={cx("rounded-[14px] border border-line bg-white", className)}>{children}</Tag>;
+  return <Tag className={cx("rounded-[14px] border border-line bg-sheet", className)}>{children}</Tag>;
 }
 
 type Tone = "neutral" | "green" | "gold" | "dark" | "danger";
 const TONE: Record<Tone, string> = {
   neutral: "bg-surface text-muted border border-line",
-  green: "bg-[#e3f1ea] text-primary-dark",
+  green: "bg-[#e4ebf7] text-primary-dark",
   gold: "bg-gold text-ink",
   dark: "bg-primary-dark text-white",
   danger: "bg-[#fbe9e9] text-danger",
@@ -67,7 +67,7 @@ export function StatCard({ label, value, hint }: { label: string; value: ReactNo
 
 export function EmptyState({ title, children, action }: { title: string; children?: ReactNode; action?: ReactNode }) {
   return (
-    <div className="rounded-[14px] border border-dashed border-line bg-white px-6 py-10 text-center">
+    <div className="rounded-[14px] border border-dashed border-line bg-sheet px-6 py-10 text-center">
       <p className="font-semibold text-ink">{title}</p>
       {children && <p className="mx-auto mt-1 max-w-md text-sm text-muted">{children}</p>}
       {action && <div className="mt-4 flex justify-center">{action}</div>}

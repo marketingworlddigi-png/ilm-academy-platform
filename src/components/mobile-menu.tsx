@@ -41,7 +41,7 @@ export function MobileMenu({ locale, nav, langs, accountHref, loginHref, signupH
       </button>
       {open && (
         <div ref={panel} id="mobile-menu" role="dialog" aria-label="Menu" onClick={(e) => { if ((e.target as HTMLElement).closest("a")) setOpen(false); }}
-          className="absolute inset-x-0 top-full z-40 border-b border-line bg-white px-5 pb-6 pt-2 shadow-lg">
+          className="absolute inset-x-0 top-full z-40 border-b border-line bg-sheet px-5 pb-6 pt-2 shadow-lg">
           <nav aria-label="Primary" className="flex flex-col">
             {nav.map((n) => <Link key={n.href} href={n.href} className="border-b border-line py-3.5 text-lg font-semibold text-ink">{n.label}</Link>)}
           </nav>

@@ -55,7 +55,7 @@ export default async function PricingPage({ params }: PageProps<"/[locale]/prici
             {plans.map((p) => {
               const best = p.duration_months === 12;
               return (
-                <li key={p.id} className={`flex flex-col rounded-[14px] border p-6 ${best ? "border-primary-dark bg-primary-dark text-white" : "border-line bg-white"}`}>
+                <li key={p.id} className={`flex flex-col rounded-[14px] border p-6 ${best ? "border-primary-dark bg-primary-dark text-white" : "border-line bg-sheet"}`}>
                   <div className="flex items-center justify-between gap-2">
                     <h2 className="text-lg font-semibold">{p.name}</h2>
                     {best && saving > 0 && <Badge tone="gold">Save ~{saving}%</Badge>}

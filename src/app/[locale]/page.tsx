@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { href, isLocale } from "@/lib/i18n/config";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -7,7 +8,8 @@ import { createPublicClient } from "@/lib/supabase/public";
 import { listBoards, listLevels, listSubjectsForLevel, nameFor, splitLevelName as splitName } from "@/modules/library/queries";
 import { listActivePlans, type Plan } from "@/modules/payments/queries";
 import { formatPkr, periodLabel } from "@/modules/payments/format";
-import { Badge, Button, Card, CourseCard, DarjaCard } from "@/components/ui";
+import { Badge, Button, Card, CourseCard } from "@/components/ui";
+import { KitabPage } from "@/components/kitab-page";
 import { ContinueCard } from "@/components/continue-card";
 import { courseIsPremium } from "@/modules/courses/access";
 
@@ -29,6 +31,9 @@ const FAQ = [
   ["How do I pay with JazzCash or Easypaisa?", "Choose a plan, send the amount to the account shown at checkout, then enter the transaction ID from the SMS and upload the receipt. We check it and activate Premium once approved."],
   ["Can my madrasa use Ilm Academy?", "Yes. Register your academy, and once approved you can add teachers, publish courses and run your students, separate from every other academy."],
 ] as const;
+
+const EYEBROW = "text-xs font-semibold uppercase tracking-[0.22em] text-gold-deep";
+const delay = (i: number) => ({ "--i": i }) as CSSProperties;
 
 // Yearly saving against twelve monthly payments, computed from the live plan prices so it can never drift from the pricing table.
 function savingPercent(plans: Plan[]): number | null {
@@ -70,44 +75,50 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
 
   return (
     <main>
-      <section className="star-pattern text-white">
-        <div className="mx-auto grid max-w-6xl gap-10 px-5 py-14 sm:py-20 lg:grid-cols-[1fr_340px] lg:items-center">
+      <section className="khatam overflow-x-clip text-white">
+        <div className="mx-auto grid max-w-6xl gap-14 px-5 pb-20 pt-14 sm:pt-20 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
           <div>
-            <p className="inline-block rounded-full border border-white/25 px-3 py-1 text-xs font-bold uppercase tracking-widest text-gold">Darse Nizami · Online</p>
-            <h1 className="mt-5 max-w-3xl text-4xl font-bold leading-tight sm:text-6xl">Your whole madrasa syllabus, in one place.</h1>
-            <p className="mt-5 max-w-2xl text-lg text-white/80">
+            <p className="rise text-xs font-semibold uppercase tracking-[0.25em] text-gold" style={delay(0)}>Darse Nizami · Online</p>
+            <h1 className="rise mt-5 max-w-3xl text-[clamp(2.75rem,7vw,5.5rem)]" style={delay(1)}>
+              Your whole madrasa syllabus, <em className="text-gold">in one place.</em>
+            </h1>
+            <p lang="ur" dir="rtl" className="urdu rise mt-4 text-2xl text-gold/90 sm:text-3xl" style={delay(2)}>درسِ نظامی، سال بہ سال</p>
+            <p className="rise mt-5 max-w-xl text-lg text-white/80" style={delay(3)}>
               Books, notes and courses from independent academies and teachers, organised by board, level and subject.
               Every book is published only after its distribution permission has been verified.
             </p>
-            <form action={href(locale, "/search")} role="search" className="mt-7 flex max-w-xl gap-2">
+            <form action={href(locale, "/search")} role="search" className="rise mt-7 flex max-w-xl gap-2" style={delay(4)}>
               <input name="q" type="search" aria-label="Search books and courses" placeholder="Search a book, subject or course"
-                className="min-w-0 flex-1 rounded-[10px] border border-white/20 bg-white px-4 py-3 text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-gold" />
+                className="min-w-0 flex-1 rounded-[10px] border border-white/20 bg-sheet px-4 py-3 text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-gold" />
               <Button type="submit" variant="gold">Search</Button>
             </form>
             {chips.length > 0 && (
-              <div className="mt-4 flex flex-wrap items-center gap-2 text-sm">
+              <div className="rise mt-4 flex flex-wrap items-center gap-2 text-sm" style={delay(5)}>
                 <span className="text-white/70">Popular:</span>
                 {chips.map((c) => (
-                  <Link key={c.id} href={href(locale, `/library/${board!.slug}/${c.levelSlug}/${c.slug}`)} className="rounded-full border border-white/25 px-3 py-1 text-white/90 hover:bg-white/10">{nameFor(c, locale)}</Link>
+                  <Link key={c.id} href={href(locale, `/library/${board!.slug}/${c.levelSlug}/${c.slug}`)} className="rounded-full border border-white/25 px-3 py-1 text-white/90 transition-colors hover:border-gold hover:text-gold">{nameFor(c, locale)}</Link>
                 ))}
               </div>
             )}
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="rise mt-7 flex flex-wrap gap-3" style={delay(6)}>
               <Button href={href(locale, "/signup")} variant="gold" size="lg">Start learning free</Button>
               <Button href={href(locale, "/library")} variant="outline" size="lg">Browse the library</Button>
             </div>
           </div>
-          <ContinueCard locale={locale} signupHref={href(locale, "/signup")} libraryHref={href(locale, "/library")} />
+          <div className="space-y-8">
+            <KitabPage />
+            <ContinueCard locale={locale} signupHref={href(locale, "/signup")} libraryHref={href(locale, "/library")} />
+          </div>
         </div>
       </section>
 
       {stats.length > 1 && (
-        <section aria-label="Ilm Academy in numbers" className="border-b border-line bg-surface">
-          <dl className="mx-auto grid max-w-6xl grid-cols-2 gap-y-5 px-5 py-6 md:grid-cols-4">
+        <section aria-label="Ilm Academy in numbers" className="border-b border-line">
+          <dl className="mx-auto grid max-w-6xl grid-cols-2 gap-y-6 px-5 py-8 md:grid-cols-4">
             {stats.map((x) => (
               <div key={x.label} className="flex flex-col-reverse border-s-2 border-gold ps-4">
                 <dt className="text-sm text-muted">{x.label}</dt>
-                <dd className="text-3xl font-bold text-primary-dark">{x.n}</dd>
+                <dd className="font-display text-5xl text-primary-dark">{x.n}</dd>
               </div>
             ))}
           </dl>
@@ -115,43 +126,56 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
       )}
 
       {boards.length > 0 && (
-        <section className="border-b border-line bg-white">
+        <section className="border-b border-line bg-sheet/70">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-5 py-4 text-sm">
-            <span className="font-bold uppercase tracking-widest text-muted">Boards</span>
+            <span className={EYEBROW}>Boards</span>
             {boards.map((b) => (
-              <Link key={b.id} href={href(locale, `/library/${b.slug}`)} className="rounded-full border border-line px-3 py-1 font-semibold text-ink hover:border-primary hover:text-primary">{nameFor(b, locale)}</Link>
+              <Link key={b.id} href={href(locale, `/library/${b.slug}`)} className="rounded-full border border-line bg-sheet px-3 py-1 font-semibold text-ink transition-colors hover:border-primary hover:text-primary">{nameFor(b, locale)}</Link>
             ))}
           </div>
         </section>
       )}
 
       {levels.length > 0 && board && (
-        <section className="mx-auto max-w-6xl px-5 py-14">
+        <section className="reveal mx-auto max-w-6xl px-5 py-20">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-primary">{nameFor(board, locale)}</p>
-              <h2 className="mt-1 text-2xl font-bold sm:text-3xl">Start from your darja</h2>
+              <p className={EYEBROW}>{nameFor(board, locale)}</p>
+              <h2 className="mt-2 text-4xl sm:text-6xl">Start from your <em className="text-primary">darja</em></h2>
             </div>
             <Link href={href(locale, "/library")} className="text-sm font-semibold text-primary hover:underline">Full library →</Link>
           </div>
-          <ul className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
-            {levels.slice(0, 8).map((l, i) => (
-              <DarjaCard key={l.id} href={href(locale, `/library/${board.slug}/${l.slug}`)} number={i + 1}
-                nameUr={l.name_ur} nameLatin={splitName(l.name_en).latin} tag={splitName(l.name_en).equiv}
-                subtitle={counts[i] > 0 ? `${counts[i]} ${counts[i] === 1 ? "subject" : "subjects"}` : "Syllabus coming soon"} />
-            ))}
-          </ul>
+          <div className="ornament mt-6"><span /></div>
+          <ol className="mt-8 grid gap-x-16 md:grid-cols-2">
+            {levels.slice(0, 8).map((l, i) => {
+              const n = splitName(l.name_en);
+              return (
+                <li key={l.id} className="border-b border-line/80">
+                  <Link href={href(locale, `/library/${board.slug}/${l.slug}`)} className="group relative flex items-end gap-3 py-5 transition-[padding] duration-200 hover:ps-3 focus-visible:outline-2 focus-visible:outline-primary">
+                    <span aria-hidden="true" className="absolute inset-y-3 start-0 w-0.5 origin-center scale-y-0 bg-gold transition-transform duration-200 group-hover:scale-y-100" />
+                    <span aria-hidden="true" className="font-display w-10 shrink-0 text-4xl leading-none text-vermilion">{i + 1}</span>
+                    <span className="min-w-0">
+                      <span className="block whitespace-nowrap text-lg font-semibold leading-tight text-ink">{n.latin.split("(")[0].trim()}</span>
+                      <span className="block text-xs text-muted">{n.latin.includes("(") ? `${n.latin.slice(n.latin.indexOf("(")).replace(/[()]/g, "")} · ` : ""}{n.equiv ? `${n.equiv} · ` : ""}{counts[i] > 0 ? `${counts[i]} ${counts[i] === 1 ? "subject" : "subjects"}` : "Syllabus coming soon"}</span>
+                    </span>
+                    <span aria-hidden="true" className="leader" />
+                    {l.name_ur && <span lang="ur" dir="rtl" className="urdu shrink-0 whitespace-nowrap text-2xl font-bold text-primary-dark">{l.name_ur.split("(")[0].trim()}</span>}
+                  </Link>
+                </li>
+              );
+            })}
+          </ol>
         </section>
       )}
 
       {courses.length > 0 && (
-        <section className="border-y border-line bg-white">
-          <div className="mx-auto max-w-6xl px-5 py-14">
+        <section className="reveal border-y border-line bg-sheet/70">
+          <div className="mx-auto max-w-6xl px-5 py-20">
             <div className="flex flex-wrap items-end justify-between gap-3">
-              <h2 className="text-2xl font-bold sm:text-3xl">Courses from trusted academies</h2>
+              <h2 className="text-4xl sm:text-5xl">Courses from trusted academies</h2>
               <Link href={href(locale, "/courses")} className="text-sm font-semibold text-primary hover:underline">All courses →</Link>
             </div>
-            <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {courses.map((c) => (
                 <CourseCard key={c.id} href={href(locale, `/courses/${c.academy.slug}/${c.slug}`)} premium={courseIsPremium(c)}
                   title={c.title} byline={c.academy.name} meta={c.summary ?? undefined} />
@@ -161,59 +185,72 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
         </section>
       )}
 
-      <section className="mx-auto max-w-6xl px-5 py-14">
-        <h2 className="text-2xl font-bold sm:text-3xl">How Ilm Academy works</h2>
-        <ol className="mt-6 grid gap-4 md:grid-cols-3">
+      <section className="reveal mx-auto max-w-6xl px-5 py-20">
+        <p className={EYEBROW}>How it works</p>
+        <h2 className="mt-2 text-4xl sm:text-5xl">Three steps to a certificate</h2>
+        <ol className="mt-10 grid gap-10 md:grid-cols-3">
           {STEPS.map(([title, text], i) => (
-            <Card as="li" key={title} className="p-5">
-              <p className="text-xs font-bold uppercase tracking-widest text-primary">Step {i + 1}</p>
-              <h3 className="mt-2 text-lg font-semibold">{title}</h3>
-              <p className="mt-2 text-sm text-muted">{text}</p>
-            </Card>
+            <li key={title} className="border-t-2 border-gold pt-5">
+              <span aria-hidden="true" className="font-display text-7xl leading-none text-primary/25">{i + 1}</span>
+              <h3 className="mt-2 text-xl font-semibold">{title}</h3>
+              <p className="mt-2 text-muted">{text}</p>
+            </li>
           ))}
         </ol>
       </section>
 
-      <section className="bg-primary-dark text-white">
-        <div className="mx-auto grid max-w-6xl gap-8 px-5 py-14 md:grid-cols-2 md:items-center">
+      <section className="khatam reveal text-white">
+        <div className="mx-auto grid max-w-6xl gap-10 px-5 py-20 md:grid-cols-2 md:items-center">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-gold">For madaris and academies</p>
-            <h2 className="mt-2 text-2xl font-bold sm:text-3xl">Run your academy on one platform</h2>
-            <ul className="mt-5 space-y-2 text-white/85">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold">For madaris and academies</p>
+            <h2 className="mt-3 text-4xl sm:text-5xl">Run your academy on one platform</h2>
+            <ul className="mt-6 space-y-2 text-white/85">
               <li>Your own courses, lessons and teachers</li>
               <li>Students and progress kept separate from every other academy</li>
               <li>Books and notes with recorded distribution permission</li>
             </ul>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Button href={href(locale, "/academy/register")} variant="gold">Register your academy</Button>
-            </div>
+            <div className="mt-8"><Button href={href(locale, "/academy/register")} variant="gold" size="lg">Register your academy</Button></div>
           </div>
-          <Card className="p-5 text-ink">
-            <p className="text-xs font-bold uppercase tracking-widest text-primary">Academy dashboard</p>
-            <p className="mt-2 text-sm text-muted">Courses, teachers, students and payments in one place, visible only to your academy.</p>
-          </Card>
+          <div aria-hidden="true" className="rounded-[8px] bg-sheet p-4 text-ink shadow-[0_30px_60px_-25px_rgba(0,0,0,0.6)]">
+            <div className="flex flex-wrap gap-2 border-b border-line pb-3 text-xs font-semibold">
+              {["Courses", "Teachers", "Students", "Payments"].map((t, i) => (
+                <span key={t} className={`rounded-full px-3 py-1 ${i === 0 ? "bg-primary text-white" : "text-muted"}`}>{t}</span>
+              ))}
+            </div>
+            <div className="mt-4 space-y-3">
+              {["w-3/4", "w-full", "w-5/6", "w-2/3"].map((w, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <span className="h-8 w-8 shrink-0 rounded-[6px] bg-gold/50" />
+                  <span className={`h-3 rounded-full bg-ink/10 ${w}`} />
+                  <span className="ms-auto h-3 w-10 shrink-0 rounded-full bg-primary/20" />
+                </div>
+              ))}
+            </div>
+            <p className="mt-4 text-xs text-muted">Visible only to your academy.</p>
+          </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-5 py-14">
-        <h2 className="text-2xl font-bold sm:text-3xl">Simple pricing</h2>
-        <ul className="mt-6 grid gap-4 md:grid-cols-3">
+      <section className="reveal mx-auto max-w-6xl px-5 py-20">
+        <p className={EYEBROW}>Pricing</p>
+        <h2 className="mt-2 text-4xl sm:text-5xl">Simple pricing</h2>
+        <ul className="mt-10 grid gap-5 md:grid-cols-3">
           <Card as="li" className="flex flex-col p-6">
             <h3 className="text-lg font-semibold">Free</h3>
-            <p className="mt-3 text-3xl font-bold">PKR 0</p>
-            <p className="mt-3 text-sm text-muted">Every book and course marked Free, with an account.</p>
+            <p className="font-display mt-3 text-5xl">PKR 0</p>
+            <p className="my-4 text-sm text-muted">Every book and course marked Free, with an account.</p>
             <Button href={href(locale, "/signup")} variant="outline" className="mt-auto">Create account</Button>
           </Card>
           {plans.map((p) => {
             const best = p.duration_months === 12;
             return (
-              <li key={p.id} className={`flex flex-col rounded-[14px] border p-6 ${best ? "border-primary-dark bg-primary-dark text-white" : "border-line bg-white"}`}>
+              <li key={p.id} className={`flex flex-col rounded-[8px] border p-6 ${best ? "khatam border-primary-dark text-white shadow-[0_30px_60px_-30px_rgba(14,33,82,0.7)]" : "border-line bg-sheet"}`}>
                 <div className="flex items-center justify-between gap-2">
                   <h3 className="text-lg font-semibold">{p.name}</h3>
                   {best && saving !== null && <Badge tone="gold">Save ~{saving}%</Badge>}
                 </div>
-                <p className="mt-3 text-3xl font-bold">{formatPkr(p.price_paisa)} <span className={`text-base font-normal ${best ? "text-white/70" : "text-muted"}`}>{periodLabel(p.duration_months)}</span></p>
-                {p.description && <p className={`mt-3 text-sm ${best ? "text-white/80" : "text-muted"}`}>{p.description}</p>}
+                <p className="font-display mt-3 text-5xl">{formatPkr(p.price_paisa)} <span className={`font-sans text-base ${best ? "text-white/70" : "text-muted"}`}>{periodLabel(p.duration_months)}</span></p>
+                {p.description && <p className={`my-4 text-sm ${best ? "text-white/80" : "text-muted"}`}>{p.description}</p>}
                 <Button href={href(locale, `/checkout/${p.code}`)} variant={best ? "gold" : "primary"} className="mt-auto">Choose {p.name}</Button>
               </li>
             );
@@ -221,17 +258,28 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
         </ul>
       </section>
 
-      <section className="border-t border-line bg-white">
-        <div className="mx-auto max-w-3xl px-5 py-14">
-          <h2 className="text-2xl font-bold sm:text-3xl">Questions</h2>
-          <div className="mt-6 divide-y divide-line rounded-[14px] border border-line">
+      <section className="reveal border-t border-line bg-sheet/70">
+        <div className="mx-auto max-w-3xl px-5 py-20">
+          <h2 className="text-4xl sm:text-5xl">Questions</h2>
+          <div className="mt-8 divide-y divide-line border-y border-line">
             {FAQ.map(([q, a]) => (
-              <details key={q} className="group p-5">
-                <summary className="cursor-pointer list-none font-semibold marker:hidden">{q}</summary>
-                <p className="mt-2 text-sm text-muted">{a}</p>
+              <details key={q} className="group py-5">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-semibold marker:hidden">
+                  {q}
+                  <span aria-hidden="true" className="font-display text-3xl leading-none text-gold-deep transition-transform group-open:rotate-45">+</span>
+                </summary>
+                <p className="mt-3 text-muted">{a}</p>
               </details>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="khatam text-center text-white">
+        <div className="mx-auto max-w-3xl px-5 py-20">
+          <p lang="ur" dir="rtl" className="urdu text-5xl text-gold sm:text-6xl">علم حاصل کریں</p>
+          <p className="mt-4 text-lg text-white/80">Begin with your darja today. Free lessons need only an account.</p>
+          <div className="mt-8"><Button href={href(locale, "/signup")} variant="gold" size="lg">Start learning free</Button></div>
         </div>
       </section>
     </main>

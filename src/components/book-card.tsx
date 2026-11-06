@@ -11,7 +11,7 @@ export function BookCard({ book, locale }: { book: Book; locale: Locale }) {
   const native = book.title_ar && book.title_ar !== title ? { text: book.title_ar, lang: "ar" as const } : book.title_ur && book.title_ur !== title ? { text: book.title_ur, lang: "ur" as const } : null;
   const cover = coverPublicUrl(book.cover_path, book.updated_at);
   return (
-    <li className="rounded-[14px] border border-line bg-white p-4 transition-colors hover:border-primary">
+    <li className="rounded-[14px] border border-line bg-sheet p-4 transition-colors hover:border-primary">
       <Link href={href(locale, `/books/${book.id}`)} className="flex gap-4">
         {cover
           // eslint-disable-next-line @next/next/no-img-element

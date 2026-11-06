@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Amiri, Noto_Nastaliq_Urdu, Plus_Jakarta_Sans } from "next/font/google";
+import { Amiri, Instrument_Sans, Instrument_Serif, Noto_Nastaliq_Urdu } from "next/font/google";
 import { notFound } from "next/navigation";
 import { dirOf, htmlLangOf, isLocale, locales } from "@/lib/i18n/config";
 import { robotsForLocale } from "@/lib/seo";
@@ -8,7 +8,8 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import "../globals.css";
 
-const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-jakarta", display: "swap" });
+const sans = Instrument_Sans({ subsets: ["latin"], variable: "--font-sans-body", display: "swap" });
+const serif = Instrument_Serif({ subsets: ["latin"], weight: "400", style: ["normal", "italic"], variable: "--font-serif-display", display: "swap" });
 const urdu = Noto_Nastaliq_Urdu({ subsets: ["arabic"], variable: "--font-urdu", display: "swap", preload: false });
 const amiri = Amiri({ subsets: ["arabic", "latin"], weight: ["400", "700"], variable: "--font-amiri", display: "swap", preload: false });
 
@@ -30,7 +31,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   return (
-    <html lang={htmlLangOf(locale)} dir={dirOf(locale)} className={`${jakarta.variable} ${urdu.variable} ${amiri.variable}`}>
+    <html lang={htmlLangOf(locale)} dir={dirOf(locale)} className={`${sans.variable} ${serif.variable} ${urdu.variable} ${amiri.variable}`}>
       <body className="flex min-h-screen flex-col antialiased">
         <SiteHeader locale={locale} />
         <div className="flex-1">{children}</div>

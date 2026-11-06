@@ -78,7 +78,7 @@ function PageCanvas({ doc, number }: { doc: PDFDocumentProxy; number: number }) 
   }, [doc, number]);
 
   return (
-    <div ref={box} className="w-full max-w-3xl overflow-hidden rounded-md border border-line bg-white" style={{ aspectRatio: `1 / ${ratio}` }}>
+    <div ref={box} className="w-full max-w-3xl overflow-hidden rounded-md border border-line bg-sheet" style={{ aspectRatio: `1 / ${ratio}` }}>
       <canvas ref={canvas} aria-label={`Page ${number}`} />
     </div>
   );

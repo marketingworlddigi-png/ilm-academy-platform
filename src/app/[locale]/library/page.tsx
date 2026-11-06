@@ -40,7 +40,7 @@ export default async function LibraryPage({ params }: PageProps<"/[locale]/libra
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {boards.map((b) => (
               <li key={b.id}>
-                <Link href={href(locale, `/library/${b.slug}`)} className="flex h-full flex-col rounded-[14px] border border-line bg-white p-5 transition-colors hover:border-primary">
+                <Link href={href(locale, `/library/${b.slug}`)} className="flex h-full flex-col rounded-[14px] border border-line bg-sheet p-5 transition-colors hover:border-primary">
                   <span className="text-xl font-bold text-primary">{nameFor(b, locale)}</span>
                   {b.description && <span className="mt-2 text-sm text-muted">{b.description}</span>}
                   <span className="mt-auto pt-3 text-sm font-semibold text-primary">Open board &rarr;</span>
