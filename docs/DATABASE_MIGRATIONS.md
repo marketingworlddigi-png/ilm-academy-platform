@@ -23,7 +23,7 @@ All four are **additive** (CREATE only; no DROP, TRUNCATE or data deletion). The
 ## Migration 11: resubmit for review
 `20261104000011_resubmit_academy.sql` adds `resubmit_academy(uuid)` (owner only; needs_info or rejected back to pending; same 3-academy cap; audited) and replaces `academies_guard` in place so only that function can make the transition, through a transaction-local flag. No DROP, no data deleted.
 
-## Is it applied? Check query (migrations 5 to 18)
+## Is it applied? Check query (migrations 5 to 19)
 Run in the Supabase SQL editor. Every column must be `true`:
 ```sql
 select
@@ -49,7 +49,9 @@ select
   to_regprocedure('public.submit_quiz_attempt(uuid,jsonb)') is not null
     and to_regclass('public.quiz_options') is not null                                                         as m17_quizzes,
   to_regprocedure('public.ask_question(uuid,text)') is not null
-    and to_regclass('public.lesson_answers') is not null                                                       as m18_lesson_qa;
+    and to_regclass('public.lesson_answers') is not null                                                       as m18_lesson_qa,
+  to_regprocedure('public.submit_assignment(uuid,text)') is not null
+    and to_regclass('public.assignment_submissions') is not null                                               as m19_assignments;
 ```
 Add one clause per new migration.
 
@@ -88,6 +90,12 @@ Add one clause per new migration.
 - Read: anyone who can open the lesson, plus the academy's teachers and super admins. Post: enrolled learners and the academy's teachers. 10 questions and 30 answers per person per day.
 - Names are a first-name snapshot taken when posting, so profiles stay private.
 - Teachers hide and unhide posts (audited as `qa.hidden` / `qa.unhidden`). Hidden posts vanish for learners.
+
+## Migration 19: assignments
+`20261110000019_assignments.sql` adds `assignments`, `assignment_submissions`, `get_assignment`, `submit_assignment`, `list_submissions` and `grade_submission`. Additive only. No DROP.
+- One assignment per lesson, written by the academy's teachers. Learners hand in plain text (up to 5000 characters), only if enrolled, and can replace it until it is marked.
+- Teachers mark with a whole-number score up to the assignment's total plus feedback (audited as `assignment.graded`). Marked work is locked for the learner.
+- Learners read only their own submission; teachers see names as first names only.
 
 ## Safety checklist before applying (I will run through this with you)
 1. Confirm the project URL host starts with the ref in `EXPECTED_SUPABASE_PROJECT_REF` and is the new `education-platform` project.

@@ -9,6 +9,7 @@ import { Badge, Button, Card, ProgressBar } from "@/components/ui";
 import { Flash, flashFrom } from "@/components/admin/ui";
 import { parseVideoUrl } from "@/modules/courses/video";
 import { LessonTabs } from "@/components/lesson-tabs";
+import { AssignmentPanel, type AssignmentData } from "@/components/assignment-panel";
 import { QaPanel } from "@/components/qa-panel";
 import { QuizPlayer, type LastAttempt } from "@/components/quiz-player";
 import { completeLesson } from "../../../../../learn-actions";
@@ -49,6 +50,7 @@ export default async function LessonPage({ params, searchParams }: PageProps<"/[
   const { data: lastRows } = quiz && user
     ? await supabase.from("quiz_attempts").select("score, total, percent, passed").eq("quiz_id", quiz.id).eq("user_id", user.id).order("created_at", { ascending: false }).limit(1)
     : { data: null };
+  const assignment = user ? ((await supabase.rpc("get_assignment", { p_lesson: l.id })).data as AssignmentData | null) : null;
   const last = (lastRows?.[0] ?? null) as LastAttempt;
   const enrolled = enrollment?.status === "active";
   const outline = (outlineData ?? []) as OutlineRow[];
@@ -124,6 +126,7 @@ export default async function LessonPage({ params, searchParams }: PageProps<"/[
           )}
             </>) },
             ...(quiz ? [{ id: "quiz", label: "Quiz", panel: <QuizPlayer quiz={quiz} last={last} /> }] : []),
+            ...(assignment ? [{ id: "assignment", label: "Assignment", panel: <AssignmentPanel assignment={assignment} /> }] : []),
             ...(user ? [{ id: "questions", label: "Questions", panel: <QaPanel lessonId={l.id} /> }] : []),
           ]} />
           {!user && (

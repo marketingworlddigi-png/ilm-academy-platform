@@ -89,7 +89,7 @@ export default async function ManageCourse({ params, searchParams }: PageProps<"
                 </div>
                 <button className="btn btn-primary" type="submit">Save lesson</button>
               </form>
-              <p className="mt-3 text-sm"><Link className="font-semibold text-brand underline" href={href(locale, `/academy/${academy.slug}/courses/${c.slug}/lessons/${l.id}/quiz`)}>Quiz for this lesson</Link></p>
+              <p className="mt-3 text-sm"><Link className="font-semibold text-brand underline" href={href(locale, `/academy/${academy.slug}/courses/${c.slug}/lessons/${l.id}/quiz`)}>Quiz for this lesson</Link> <span aria-hidden="true">·</span> <Link className="font-semibold text-brand underline" href={href(locale, `/academy/${academy.slug}/courses/${c.slug}/lessons/${l.id}/assignment`)}>Assignment and marking</Link></p>
               <form action={deleteLesson} className="mt-2">{hidden("id", l.id)}<button className="btn btn-ghost text-sm" type="submit">Delete lesson</button></form>
             </details>
           ))}
