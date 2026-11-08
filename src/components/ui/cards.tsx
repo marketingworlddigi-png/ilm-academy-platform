@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Badge, ProgressBar } from "./primitives";
+import { GeoStar } from "../ornaments";
 
 /** One darja (level) tile: number badge, Urdu name in Nastaliq, transliterated name and a subtitle. */
 export function DarjaCard({ href, number, tag, nameUr, nameLatin, subtitle }: {
@@ -27,8 +28,9 @@ export function CourseCard({ href, arabicTitle, premium, eyebrow, title, byline,
   return (
     <li>
       <Link href={href} className="flex h-full flex-col overflow-hidden rounded-[6px] border border-line bg-sheet transition-[transform,border-color,box-shadow] duration-200 hover:border-gold-deep hover:shadow-[0_14px_30px_-18px_rgba(14,33,82,0.45)] motion-safe:hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
-        <span className="khatam relative flex h-24 items-center justify-center px-4">
-          {arabicTitle && <span lang="ar" dir="rtl" className="arabic-title truncate text-2xl font-bold text-gold">{arabicTitle}</span>}
+        <span className="khatam relative flex h-24 items-center justify-center overflow-hidden px-4">
+          <GeoStar spin="spin-slow" className="absolute -end-6 -top-10 h-36 w-36 opacity-60" />
+          {arabicTitle && <span lang="ar" dir="rtl" className="arabic-title relative truncate text-2xl font-bold text-gold">{arabicTitle}</span>}
           <Badge tone={premium ? "gold" : "green"} className="absolute end-3 top-3">{premium ? "Premium" : "Free"}</Badge>
         </span>
         <span className="flex flex-1 flex-col p-4">

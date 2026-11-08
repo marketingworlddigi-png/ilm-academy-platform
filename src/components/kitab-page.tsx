@@ -14,9 +14,10 @@ function Margin({ side }: { side: "start" | "end" }) {
 export function KitabPage() {
   return (
     <figure className="relative mx-auto w-full max-w-[25rem]">
+      <div aria-hidden="true" className="drift absolute -inset-10 rounded-full bg-gold/20 blur-3xl" />
       <div aria-hidden="true" className="absolute inset-0 translate-x-3.5 translate-y-3.5 rotate-[3deg] rounded-[6px] bg-gold/35" />
       <div aria-hidden="true" className="absolute inset-0 -translate-x-2 translate-y-2 rotate-[-4deg] rounded-[6px] bg-white/10" />
-      <div className="settle relative rounded-[6px] bg-sheet p-3 text-ink shadow-[0_40px_70px_-25px_rgba(0,0,0,0.6)]">
+      <div className="float-y"><div className="settle relative rounded-[6px] bg-sheet p-3 text-ink shadow-[0_40px_70px_-25px_rgba(0,0,0,0.6)]">
         <div aria-hidden="true" className="border border-gold-deep/70 p-1.5">
           <div className="border-2 border-double border-gold-deep/60 px-3 pb-3 pt-4">
             <p lang="ar" dir="rtl" className="arabic-title text-center text-lg text-gold-deep">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
@@ -40,6 +41,9 @@ export function KitabPage() {
         {/* gold ribbon bookmark */}
         <span aria-hidden="true" className="absolute -top-1 end-8 h-12 w-4 bg-vermilion [clip-path:polygon(0_0,100%_0,100%_100%,50%_78%,0_100%)]" />
       </div>
+      </div>
+      <span aria-hidden="true" className="float-y-b absolute -start-6 top-24 hidden items-center gap-2 rounded-full border border-gold/40 bg-primary-dark/80 px-3 py-1.5 text-xs font-semibold text-gold backdrop-blur sm:flex"><i className="h-1.5 w-1.5 rounded-full bg-gold" />Hashiya</span>
+      <span aria-hidden="true" className="float-y absolute -end-8 top-[46%] hidden items-center gap-2 rounded-full border border-gold/40 bg-primary-dark/80 px-3 py-1.5 text-xs font-semibold text-gold backdrop-blur sm:flex"><i className="h-1.5 w-1.5 rounded-full bg-gold" />Sharh</span>
       <figcaption className="mt-7 text-center text-sm text-white/70">Matn in the centre, sharh in the margins: the way every kitab is laid out.</figcaption>
     </figure>
   );

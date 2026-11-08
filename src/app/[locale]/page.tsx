@@ -10,6 +10,7 @@ import { listActivePlans, type Plan } from "@/modules/payments/queries";
 import { formatPkr, periodLabel } from "@/modules/payments/format";
 import { Badge, Button, Card, CourseCard } from "@/components/ui";
 import { KitabPage } from "@/components/kitab-page";
+import { GeoStar, SubjectMarquee } from "@/components/ornaments";
 import { ContinueCard } from "@/components/continue-card";
 import { courseIsPremium } from "@/modules/courses/access";
 
@@ -75,15 +76,17 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
 
   return (
     <main>
-      <section className="khatam overflow-x-clip text-white">
-        <div className="mx-auto grid max-w-6xl gap-14 px-5 pb-20 pt-14 sm:pt-20 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+      <section className="khatam overflow-hidden text-white">
+        <GeoStar className="absolute -end-48 -top-40 h-[52rem] w-[52rem] opacity-40" />
+        <GeoStar spin="spin-slower" className="absolute -bottom-72 -start-64 h-[44rem] w-[44rem] opacity-20" />
+        <div className="relative mx-auto grid max-w-6xl gap-16 px-5 pb-24 pt-16 sm:pt-24 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
           <div>
-            <p className="rise text-xs font-semibold uppercase tracking-[0.25em] text-gold" style={delay(0)}>Darse Nizami · Online</p>
-            <h1 className="rise mt-5 max-w-3xl text-[clamp(2.75rem,7vw,5.5rem)]" style={delay(1)}>
-              Your whole madrasa syllabus, <em className="text-gold">in one place.</em>
+            <p className="rise flex items-center gap-4 text-xs font-semibold uppercase tracking-[0.3em] text-gold" style={delay(0)}><span aria-hidden="true" className="grow-x h-px w-14 bg-gold" />Darse Nizami · Online</p>
+            <h1 className="rise mt-6 max-w-3xl text-[clamp(3rem,7.6vw,6.25rem)]" style={delay(1)}>
+              Your whole madrasa syllabus, <em className="gold-shimmer pe-2">in one place.</em>
             </h1>
-            <p lang="ur" dir="rtl" className="urdu rise mt-4 text-2xl text-gold/90 sm:text-3xl" style={delay(2)}>درسِ نظامی، سال بہ سال</p>
-            <p className="rise mt-5 max-w-xl text-lg text-white/80" style={delay(3)}>
+            <p lang="ur" dir="rtl" className="urdu rise mt-5 text-3xl text-gold sm:text-4xl" style={delay(2)}>درسِ نظامی، سال بہ سال</p>
+            <p className="rise mt-6 max-w-xl text-lg leading-relaxed text-white/75" style={delay(3)}>
               Books, notes and courses from independent academies and teachers, organised by board, level and subject.
               Every book is published only after its distribution permission has been verified.
             </p>
@@ -110,6 +113,7 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
             <ContinueCard locale={locale} signupHref={href(locale, "/signup")} libraryHref={href(locale, "/library")} />
           </div>
         </div>
+        <div className="relative"><SubjectMarquee /></div>
       </section>
 
       {stats.length > 1 && (
@@ -118,7 +122,7 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
             {stats.map((x) => (
               <div key={x.label} className="flex flex-col-reverse border-s-2 border-gold ps-4">
                 <dt className="text-sm text-muted">{x.label}</dt>
-                <dd className="font-display text-5xl text-primary-dark">{x.n}</dd>
+                <dd className="font-display text-6xl text-primary-dark">{x.n}</dd>
               </div>
             ))}
           </dl>
@@ -168,6 +172,21 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
         </section>
       )}
 
+      {levels.length > 1 && (
+        <section className="khatam reveal overflow-hidden text-white">
+          <GeoStar spin="spin-slower" className="absolute -end-32 top-1/2 h-[34rem] w-[34rem] -translate-y-1/2 opacity-25" />
+          <div className="relative mx-auto grid max-w-6xl items-center gap-8 px-5 py-24 md:grid-cols-[auto_1fr] md:gap-16">
+            <p aria-hidden="true" className="gold-shimmer font-display text-[clamp(9rem,22vw,17rem)] leading-[0.8]">{levels.length}</p>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-gold">The path</p>
+              <h2 className="mt-3 max-w-xl text-4xl sm:text-6xl"><span className="sr-only">{levels.length} </span>darajat, one syllabus, <em className="text-gold">every book in its place.</em></h2>
+              <p className="mt-5 max-w-xl text-lg leading-relaxed text-white/75">Follow the course of study year by year, from the first year to Daura-e-Hadith. Each darja lists its subjects, and each subject its books.</p>
+              <div className="mt-8"><Button href={href(locale, "/library")} variant="gold" size="lg">Explore the library</Button></div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {courses.length > 0 && (
         <section className="reveal border-y border-line bg-sheet/70">
           <div className="mx-auto max-w-6xl px-5 py-20">
@@ -190,8 +209,8 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
         <h2 className="mt-2 text-4xl sm:text-5xl">Three steps to a certificate</h2>
         <ol className="mt-10 grid gap-10 md:grid-cols-3">
           {STEPS.map(([title, text], i) => (
-            <li key={title} className="border-t-2 border-gold pt-5">
-              <span aria-hidden="true" className="font-display text-7xl leading-none text-primary/25">{i + 1}</span>
+            <li key={title} className="relative border-t border-gold-deep/50 pt-6 before:absolute before:-top-[5px] before:start-0 before:h-2.5 before:w-2.5 before:rotate-45 before:bg-gold">
+              <span aria-hidden="true" className="font-display text-8xl leading-none text-primary/20">{i + 1}</span>
               <h3 className="mt-2 text-xl font-semibold">{title}</h3>
               <p className="mt-2 text-muted">{text}</p>
             </li>
@@ -199,8 +218,9 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
         </ol>
       </section>
 
-      <section className="khatam reveal text-white">
-        <div className="mx-auto grid max-w-6xl gap-10 px-5 py-20 md:grid-cols-2 md:items-center">
+      <section className="khatam reveal overflow-hidden text-white">
+        <GeoStar className="absolute -start-40 top-1/2 h-[40rem] w-[40rem] -translate-y-1/2 opacity-25" />
+        <div className="relative mx-auto grid max-w-6xl gap-12 px-5 py-24 md:grid-cols-2 md:items-center">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold">For madaris and academies</p>
             <h2 className="mt-3 text-4xl sm:text-5xl">Run your academy on one platform</h2>
@@ -211,7 +231,7 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
             </ul>
             <div className="mt-8"><Button href={href(locale, "/academy/register")} variant="gold" size="lg">Register your academy</Button></div>
           </div>
-          <div aria-hidden="true" className="rounded-[8px] bg-sheet p-4 text-ink shadow-[0_30px_60px_-25px_rgba(0,0,0,0.6)]">
+          <div aria-hidden="true" className="float-y rounded-[10px] bg-sheet p-5 text-ink shadow-[0_40px_80px_-30px_rgba(0,0,0,0.7)] ring-1 ring-gold/40">
             <div className="flex flex-wrap gap-2 border-b border-line pb-3 text-xs font-semibold">
               {["Courses", "Teachers", "Students", "Payments"].map((t, i) => (
                 <span key={t} className={`rounded-full px-3 py-1 ${i === 0 ? "bg-primary text-white" : "text-muted"}`}>{t}</span>
@@ -221,7 +241,7 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
               {["w-3/4", "w-full", "w-5/6", "w-2/3"].map((w, i) => (
                 <div key={i} className="flex items-center gap-3">
                   <span className="h-8 w-8 shrink-0 rounded-[6px] bg-gold/50" />
-                  <span className={`h-3 rounded-full bg-ink/10 ${w}`} />
+                  <span className={`grow-x h-3 rounded-full bg-ink/10 ${w}`} style={{ animationDelay: `${0.4 + i * 0.15}s` }} />
                   <span className="ms-auto h-3 w-10 shrink-0 rounded-full bg-primary/20" />
                 </div>
               ))}
@@ -244,7 +264,7 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
           {plans.map((p) => {
             const best = p.duration_months === 12;
             return (
-              <li key={p.id} className={`flex flex-col rounded-[8px] border p-6 ${best ? "khatam border-primary-dark text-white shadow-[0_30px_60px_-30px_rgba(14,33,82,0.7)]" : "border-line bg-sheet"}`}>
+              <li key={p.id} className={`relative flex flex-col rounded-[10px] border p-7 ${best ? "khatam gold-border border-primary-dark text-white shadow-[0_40px_80px_-30px_rgba(14,33,82,0.8)] md:-translate-y-3" : "border-line bg-sheet"}`}>
                 <div className="flex items-center justify-between gap-2">
                   <h3 className="text-lg font-semibold">{p.name}</h3>
                   {best && saving !== null && <Badge tone="gold">Save ~{saving}%</Badge>}
@@ -275,9 +295,10 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
         </div>
       </section>
 
-      <section className="khatam text-center text-white">
-        <div className="mx-auto max-w-3xl px-5 py-20">
-          <p lang="ur" dir="rtl" className="urdu text-5xl text-gold sm:text-6xl">علم حاصل کریں</p>
+      <section className="khatam overflow-hidden text-center text-white">
+        <GeoStar className="absolute left-1/2 top-1/2 h-[46rem] w-[46rem] -translate-x-1/2 -translate-y-1/2 opacity-30" />
+        <div className="relative mx-auto max-w-3xl px-5 py-28">
+          <p lang="ur" dir="rtl" className="urdu gold-shimmer text-6xl sm:text-8xl">علم حاصل کریں</p>
           <p className="mt-4 text-lg text-white/80">Begin with your darja today. Free lessons need only an account.</p>
           <div className="mt-8"><Button href={href(locale, "/signup")} variant="gold" size="lg">Start learning free</Button></div>
         </div>

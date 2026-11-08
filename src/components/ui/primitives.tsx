@@ -8,7 +8,7 @@ const VARIANT: Record<Variant, string> = {
   primary: "bg-primary text-white hover:bg-primary-dark",
   outline: "border border-line bg-sheet text-ink hover:border-primary hover:text-primary",
   dark: "bg-primary-dark text-white hover:bg-ink",
-  gold: "bg-gold text-ink hover:brightness-105 hover:shadow-[0_0_0_4px_rgba(227,185,77,0.28)]",
+  gold: "btn-shine bg-gold text-ink hover:brightness-105 hover:shadow-[0_0_0_4px_rgba(227,185,77,0.28)]",
   ghost: "text-primary hover:bg-paper-2",
 };
 const SIZE = { sm: "px-3 py-1.5 text-sm", md: "px-4 py-2.5 text-[0.95rem]", lg: "px-6 py-3 text-base" } as const;

@@ -64,13 +64,56 @@ html[lang^="ar"] :is(h1, h2, .font-display) { font-family: var(--font-amiri), se
 :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 ::selection { background: var(--gold); color: var(--ink); }
 
-/* Dark lapis band with a tiled eight-point star (khatam) in fine gold lines. Flat colour, no gradient. */
+/* Midnight-lapis band: deep blue with pooled gold and blue light and a fine film grain. Replaces the old tiled pattern everywhere. */
 .khatam {
-  background-color: var(--primary-dark);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96' fill='none'%3E%3Cg stroke='%23e3b94d' stroke-opacity='.16' stroke-width='1.2'%3E%3Cpath d='M48 12 58 38 84 48 58 58 48 84 38 58 12 48 38 38Z'/%3E%3Crect x='24' y='24' width='48' height='48' transform='rotate(45 48 48)'/%3E%3Cpath d='M0 0 12 12M96 0 84 12M0 96 12 84M96 96 84 84'/%3E%3C/g%3E%3C/svg%3E");
-  background-size: 96px 96px;
+  position: relative;
+  background-color: #0a1740;
+  background-image:
+    radial-gradient(38rem 26rem at 8% 0%, rgba(227,185,77,.14), transparent 70%),
+    radial-gradient(46rem 32rem at 100% 100%, rgba(60,104,196,.34), transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 .khatam-soft { background-image: none; }
+
+/* Gold that catches the light: animated sheen across text. */
+.gold-shimmer {
+  background: linear-gradient(100deg, #b98a24 0%, #f6dc8d 28%, #e3b94d 45%, #fff2c2 55%, #d6a63a 72%, #b98a24 100%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: sheen 6s ease-in-out infinite;
+}
+@keyframes sheen { 0%, 100% { background-position: 100% 0; } 50% { background-position: 0 0; } }
+
+/* Slow ambient motion for the ornaments. */
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+@keyframes float-y { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+@keyframes drift { 0%, 100% { transform: translate(0,0) scale(1); } 50% { transform: translate(24px,-18px) scale(1.08); } }
+@keyframes marquee { to { transform: translateX(-50%); } }
+@keyframes grow-x { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.spin-slow { animation: spin-slow 140s linear infinite; }
+.spin-slower { animation: spin-slow 220s linear infinite reverse; }
+.float-y { animation: float-y 7s ease-in-out infinite; }
+.float-y-b { animation: float-y 9s ease-in-out -3s infinite; }
+.drift { animation: drift 16s ease-in-out infinite; }
+.marquee-track { display: flex; width: max-content; animation: marquee 48s linear infinite; }
+.marquee:hover .marquee-track { animation-play-state: paused; }
+.grow-x { transform-origin: left; animation: grow-x 1.4s cubic-bezier(.2,.7,.2,1) .5s both; }
+
+/* Gold button sheen: a light sweep on hover. */
+.btn-shine { position: relative; overflow: hidden; }
+.btn-shine::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.55) 50%, transparent 65%); transform: translateX(-120%); transition: transform .7s ease; }
+.btn-shine:hover::after { transform: translateX(120%); }
+
+/* Featured card: a gold light that travels around the edge. */
+@property --ang { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+@keyframes spin-ang { to { --ang: 360deg; } }
+.gold-border::before {
+  content: ""; position: absolute; inset: -2px; border-radius: inherit; padding: 2px; pointer-events: none;
+  background: conic-gradient(from var(--ang), transparent 0 55%, var(--gold) 80%, #fff2c2 90%, transparent 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  animation: spin-ang 6s linear infinite;
+}
 
 /* Dotted leader between a contents entry and its page, like the fihrist of a printed kitab. */
 .leader { flex: 1; min-width: 1.5rem; align-self: end; margin-bottom: .45em; border-bottom: 2px dotted color-mix(in srgb, var(--gold-deep) 55%, transparent); }
