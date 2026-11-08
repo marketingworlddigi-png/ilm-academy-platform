@@ -35,7 +35,7 @@ export default async function LearnPage({ params }: PageProps<"/[locale]/learn">
 
   return (
     <main>
-      <section className="bg-ink text-white star-pattern">
+      <section className="khatam page-hero text-white">
         <div className="mx-auto max-w-6xl px-5 py-10 sm:py-12">
           <p className="text-xs font-bold uppercase tracking-widest text-gold">Learn</p>
           <h1 className="mt-1 text-3xl font-bold leading-tight sm:text-4xl">Continue learning</h1>

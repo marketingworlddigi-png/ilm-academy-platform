@@ -3,9 +3,10 @@ import { Logo } from "./logo";
 import { href, type Locale } from "@/lib/i18n/config";
 
 const COLUMNS: Array<{ title: string; links: Array<[string, string]> }> = [
-  { title: "Learn", links: [["/library", "Library"], ["/courses", "Courses"], ["/pricing", "Pricing"]] },
-  { title: "Teach", links: [["/academy/register", "Register your academy"]] },
-  { title: "Help", links: [["/login", "Sign in"], ["/signup", "Create account"]] },
+  { title: "Learn", links: [["/library", "Library"], ["/courses", "Courses"], ["/subjects", "The ten subjects"], ["/guides", "Study guides"], ["/darse-nizami", "The Darse Nizami"], ["/pricing", "Pricing"]] },
+  { title: "Teach", links: [["/for-academies", "For academies"], ["/academy/register", "Register your academy"]] },
+  { title: "About", links: [["/about", "About Ilm Academy"], ["/how-it-works", "How it works"], ["/copyright", "Copyright and permissions"], ["/faq", "FAQ"]] },
+  { title: "Account", links: [["/login", "Sign in"], ["/signup", "Create account"]] },
 ];
 
 export function SiteFooter({ locale }: { locale: Locale }) {
@@ -13,7 +14,7 @@ export function SiteFooter({ locale }: { locale: Locale }) {
     <footer className="khatam relative overflow-hidden text-white">
       {/* The Urdu name as a large watermark: purely decorative, hidden from assistive technology. */}
       <span aria-hidden="true" lang="ur" dir="rtl" className="urdu pointer-events-none absolute -bottom-10 end-4 select-none text-[9rem] font-bold leading-none text-white/[0.05] sm:text-[14rem]">علم</span>
-      <div className="relative mx-auto grid max-w-6xl gap-10 px-5 py-14 sm:grid-cols-[2fr_1fr_1fr_1fr]">
+      <div className="relative mx-auto grid max-w-6xl gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr]">
         <div>
           <Logo tone="light" />
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/70">The Darse Nizami syllabus, taught year by year. Books are published only where distribution permission is recorded.</p>

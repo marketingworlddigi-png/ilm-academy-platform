@@ -41,7 +41,7 @@ export default async function AccountPage({ params, searchParams }: PageProps<"/
 
   return (
     <main>
-      <section className="bg-ink text-white star-pattern">
+      <section className="khatam page-hero text-white">
         <div className="mx-auto max-w-6xl px-5 py-10 sm:py-12">
           <p className="text-xs font-bold uppercase tracking-widest text-gold">My learning</p>
           <h1 className="mt-1 text-3xl font-bold leading-tight sm:text-4xl">Welcome{profile?.full_name ? `, ${profile.full_name}` : ""}</h1>

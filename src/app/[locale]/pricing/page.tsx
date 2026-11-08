@@ -31,7 +31,7 @@ export default async function PricingPage({ params }: PageProps<"/[locale]/prici
   const saving = monthly && yearly ? Math.round((1 - yearly.price_paisa / (monthly.price_paisa * 12)) * 100) : 0;
   return (
     <main>
-      <section className="bg-ink text-white star-pattern">
+      <section className="khatam page-hero text-white">
         <div className="mx-auto max-w-6xl px-5 py-10 sm:py-12">
           <div><Breadcrumbs tone="dark" crumbs={[{ label: "Home", path: href(locale) }, { label: "Pricing", path: href(locale, "/pricing") }]} /></div>
           <h1 className="mt-4 text-3xl font-bold leading-tight sm:text-4xl">Premium access</h1>

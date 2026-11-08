@@ -22,7 +22,8 @@ describe("buildSitemapPaths", () => {
     }
     expect(paths).toContain(`/en-pk/pricing`);
     expect(paths).toContain(`/en-pk/courses`);
-    expect(paths).toHaveLength(8);
+    for (const p of ["about", "darse-nizami", "how-it-works", "for-academies", "subjects", "subjects/nahw", "guides", "faq", "copyright"]) expect(paths).toContain(`/en-pk/${p}`);
+    expect(paths).toHaveLength(8 + 8 + 10 + 6);
   });
   it("does not list untranslated languages", () => {
     expect(paths.some((p) => p.startsWith("/ur-pk") || p.startsWith("/ar"))).toBe(false);

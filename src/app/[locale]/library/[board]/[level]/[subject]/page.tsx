@@ -5,7 +5,7 @@ import { alternatesFor } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/site";
 import { createPublicClient } from "@/lib/supabase/public";
 import { getBoard, getLevel, getSubjectBySlug, listBooks, listSubjectsForLevel, nameFor } from "@/modules/library/queries";
-import { Breadcrumbs } from "@/components/breadcrumbs";
+import { PageHero } from "@/components/page-hero";
 import { EmptyState } from "@/components/ui";
 import { BookCard } from "@/components/book-card";
 import { JsonLd } from "@/components/json-ld";
@@ -43,24 +43,21 @@ export default async function SubjectPage({ params }: PageProps<"/[locale]/libra
   const base = `/library/${board.slug}/${level.slug}`;
   return (
     <main>
-      <section className="bg-ink text-white star-pattern">
-        <div className="mx-auto max-w-6xl px-5 py-10 sm:py-12">
-          <div><Breadcrumbs tone="dark" crumbs={[
-            { label: "Home", path: href(locale) }, { label: "Library", path: href(locale, "/library") },
-            { label: nameFor(board, locale), path: href(locale, `/library/${board.slug}`) },
-            { label: nameFor(level, locale), path: href(locale, base) },
-            { label: nameFor(subject, locale), path: href(locale, `${base}/${subject.slug}`) },
-          ]} /></div>
-          {(subject.name_ar ?? subject.name_ur) && <p lang={subject.name_ar ? "ar" : "ur"} dir="rtl" className={`${subject.name_ar ? "arabic-title" : "urdu"} mt-4 w-fit text-3xl font-bold text-gold`}>{subject.name_ar ?? subject.name_ur}</p>}
-          <h1 className="text-2xl font-bold leading-tight sm:text-3xl">{subject.name_en}</h1>
-          <p className="mt-2 text-white/80">{nameFor(level, locale)} &middot; {nameFor(board, locale)}</p>
-        </div>
-      </section>
-      <div className="mx-auto max-w-6xl px-5 py-10">
+      <PageHero
+        crumbs={[
+          { label: "Home", path: href(locale) }, { label: "Library", path: href(locale, "/library") },
+          { label: nameFor(board, locale), path: href(locale, `/library/${board.slug}`) },
+          { label: nameFor(level, locale), path: href(locale, base) },
+          { label: nameFor(subject, locale), path: href(locale, `${base}/${subject.slug}`) },
+        ]}
+        eyebrow="Subject" native={subject.name_ar ?? subject.name_ur} nativeLang={subject.name_ar ? "ar" : "ur"} title={subject.name_en}
+        blurb={<>{nameFor(level, locale)} &middot; {nameFor(board, locale)}</>}
+      />
+      <div className="mx-auto max-w-6xl px-5 py-16">
         {books.length === 0 ? (
           <EmptyState title="No books are listed here yet.">Books appear once their distribution permissions are verified.</EmptyState>
         ) : (
-          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{books.map((bk) => <BookCard key={bk.id} book={bk} locale={locale} />)}</ul>
+          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{books.map((bk) => <BookCard key={bk.id} book={bk} locale={locale} />)}</ul>
         )}
       </div>
       <JsonLd data={{

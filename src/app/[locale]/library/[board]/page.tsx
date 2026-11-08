@@ -4,8 +4,9 @@ import { href, isLocale } from "@/lib/i18n/config";
 import { alternatesFor } from "@/lib/seo";
 import { createPublicClient } from "@/lib/supabase/public";
 import { getBoard, listLevels, listSubjectsForLevel, nameFor, splitLevelName } from "@/modules/library/queries";
-import { Breadcrumbs } from "@/components/breadcrumbs";
-import { DarjaCard, EmptyState } from "@/components/ui";
+import { EmptyState } from "@/components/ui";
+import { DarjaContents } from "@/components/darja-contents";
+import { PageHero, SectionHead } from "@/components/page-hero";
 
 export const revalidate = 300;
 
@@ -31,27 +32,27 @@ export default async function BoardPage({ params }: PageProps<"/[locale]/library
   const counts = await Promise.all(levels.map(async (l) => (await listSubjectsForLevel(db, l.id)).length));
   return (
     <main>
-      <section className="bg-ink text-white star-pattern">
-        <div className="mx-auto max-w-6xl px-5 py-10 sm:py-12">
-          <div><Breadcrumbs tone="dark" crumbs={[
-            { label: "Home", path: href(locale) }, { label: "Library", path: href(locale, "/library") },
-            { label: nameFor(board, locale), path: href(locale, `/library/${board.slug}`) },
-          ]} /></div>
-          <h1 className="mt-4 text-3xl font-bold leading-tight sm:text-4xl">{nameFor(board, locale)}</h1>
-          {board.description && <p className="mt-2 max-w-2xl text-white/80">{board.description}</p>}
+      <PageHero
+        crumbs={[
+          { label: "Home", path: href(locale) }, { label: "Library", path: href(locale, "/library") },
+          { label: nameFor(board, locale), path: href(locale, `/library/${board.slug}`) },
+        ]}
+        eyebrow="Board" title={nameFor(board, locale)} blurb={board.description}
+      />
+      <div className="mx-auto max-w-6xl px-5 py-16">
+        <SectionHead eyebrow="Choose your darja" title={<>The course of study, <em className="text-primary">year by year</em></>} />
+        <div className="mt-10">
+          {levels.length === 0 ? <EmptyState title="No levels have been added to this board yet." /> : (
+            <DarjaContents items={levels.map((l, i) => {
+              const n = splitLevelName(l.name_en);
+              const par = n.latin.includes("(") ? n.latin.slice(n.latin.indexOf("(")).replace(/[()]/g, "") : "";
+              return {
+                id: l.id, href: href(locale, `/library/${board.slug}/${l.slug}`), latin: n.latin.split("(")[0].trim(), ur: l.name_ur?.split("(")[0].trim() ?? null,
+                note: [par, n.equiv, counts[i] > 0 ? `${counts[i]} ${counts[i] === 1 ? "subject" : "subjects"}` : "Syllabus coming soon"].filter(Boolean).join(" · "),
+              };
+            })} />
+          )}
         </div>
-      </section>
-      <div className="mx-auto max-w-6xl px-5 py-10">
-        <h2 className="text-2xl font-bold">Choose your darja</h2>
-        {levels.length === 0 ? <div className="mt-5"><EmptyState title="No levels have been added to this board yet." /></div> : (
-          <ul className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {levels.map((l, i) => (
-              <DarjaCard key={l.id} href={href(locale, `/library/${board.slug}/${l.slug}`)} number={i + 1}
-                nameUr={l.name_ur} nameLatin={splitLevelName(l.name_en).latin} tag={splitLevelName(l.name_en).equiv}
-                subtitle={counts[i] > 0 ? `${counts[i]} ${counts[i] === 1 ? "subject" : "subjects"}` : "Syllabus coming soon"} />
-            ))}
-          </ul>
-        )}
       </div>
     </main>
   );

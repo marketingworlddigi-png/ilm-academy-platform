@@ -149,3 +149,40 @@ html[lang^="ar"] :is(h1, h2, .font-display) { font-family: var(--font-amiri), se
 }
 
 .settle { animation: settle 1s cubic-bezier(.2,.7,.2,1) .25s both; transform: rotate(-1.5deg); }
+
+/* Inner-page hero: the midnight band with one large turning gold rosette, a bigger display title and a gold base line. */
+.page-hero { overflow: hidden; border-bottom: 1px solid rgba(227,185,77,.35); }
+.page-hero::before {
+  content: ""; position: absolute; inset-inline-end: -9rem; top: 50%; width: 36rem; height: 36rem; margin-top: -18rem; pointer-events: none; opacity: .4;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='none' stroke='%23e3b94d' stroke-width='.6'%3E%3Ccircle cx='100' cy='100' r='97' stroke-opacity='.5'/%3E%3Ccircle cx='100' cy='100' r='92' stroke-opacity='.25'/%3E%3Crect x='34' y='34' width='132' height='132' stroke-opacity='.7'/%3E%3Crect x='34' y='34' width='132' height='132' stroke-opacity='.7' transform='rotate(45 100 100)'/%3E%3Crect x='48' y='48' width='104' height='104' stroke-opacity='.5' transform='rotate(22.5 100 100)'/%3E%3Crect x='48' y='48' width='104' height='104' stroke-opacity='.5' transform='rotate(67.5 100 100)'/%3E%3Ccircle cx='100' cy='100' r='40' stroke-opacity='.4'/%3E%3C/svg%3E") center / contain no-repeat;
+  animation: spin-slow 160s linear infinite;
+}
+.page-hero > div { position: relative; padding-block: 3.5rem 4rem; }
+.page-hero h1 { font-size: clamp(2.5rem, 5.4vw, 4.25rem); line-height: 1.05; }
+.page-hero p[lang] { font-size: clamp(2rem, 4.4vw, 3.25rem); }
+
+/* Library tiles that turn emerald on hover. */
+.tile { position: relative; overflow: hidden; transition: background-color .35s, border-color .35s, transform .35s, box-shadow .35s; }
+.tile::after { content: ""; position: absolute; inset-inline-end: -2.5rem; bottom: -2.5rem; width: 9rem; height: 9rem; border: 1px solid var(--gold); opacity: 0; transform: rotate(45deg) scale(.6); transition: opacity .35s, transform .5s; }
+.tile:hover, .tile:focus-visible { background-color: var(--primary-dark); border-color: var(--primary-dark); box-shadow: 0 24px 44px -24px rgba(6,42,32,.7); }
+.tile:hover::after, .tile:focus-visible::after { opacity: .55; transform: rotate(45deg) scale(1); }
+.tile:hover .tile-ink, .tile:focus-visible .tile-ink { color: #fff; }
+.tile:hover .tile-gold, .tile:focus-visible .tile-gold { color: var(--gold); }
+.tile:hover .tile-muted, .tile:focus-visible .tile-muted { color: rgba(255,255,255,.72); }
+
+/* Long-form reading: guides and subject pages. */
+.prose-ilm { max-width: 44rem; }
+.prose-ilm section + section { margin-top: 3.5rem; }
+.prose-ilm > .dropcap + section { margin-top: 3rem; }
+.prose-ilm > .dropcap { overflow: hidden; }
+.prose-ilm h2 { font-size: clamp(1.9rem, 3.2vw, 2.6rem); line-height: 1.15; margin-bottom: 1.1rem; }
+.prose-ilm p { margin-top: 1.1rem; font-size: 1.075rem; line-height: 1.9; color: color-mix(in srgb, var(--ink) 86%, transparent); }
+.prose-ilm ul, .prose-ilm ol { margin-top: 1.25rem; display: grid; gap: .8rem; }
+.prose-ilm ul > li { position: relative; padding-inline-start: 1.6rem; line-height: 1.75; }
+.prose-ilm ul > li::before { content: ""; position: absolute; inset-inline-start: .15rem; top: .7em; width: .45rem; height: .45rem; transform: rotate(45deg); background: var(--gold); }
+.prose-ilm ol { counter-reset: n; }
+.prose-ilm ol > li { counter-increment: n; position: relative; padding-inline-start: 2.6rem; line-height: 1.75; }
+.prose-ilm ol > li::before { content: counter(n); position: absolute; inset-inline-start: 0; top: -.15em; font-family: var(--font-display), serif; font-size: 1.8rem; line-height: 1.2; color: var(--vermilion); }
+.prose-ilm .callout { margin-top: 2rem; padding: 1.5rem 1.75rem; border-inline-start: 3px solid var(--gold); background: var(--paper); border-radius: 0 8px 8px 0; }
+.dropcap::first-letter { float: left; font-family: var(--font-display), serif; font-size: 4.6rem; line-height: .82; padding: .3rem .6rem 0 0; color: var(--primary); }
+html[dir="rtl"] .dropcap::first-letter { float: right; padding: .3rem 0 0 .6rem; }

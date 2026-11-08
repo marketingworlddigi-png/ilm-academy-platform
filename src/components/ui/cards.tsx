@@ -8,14 +8,14 @@ export function DarjaCard({ href, number, tag, nameUr, nameLatin, subtitle }: {
 }) {
   return (
     <li>
-      <Link href={href} className="flex h-full flex-col rounded-[6px] border border-line bg-sheet p-4 transition-[transform,border-color,box-shadow] duration-200 hover:border-gold-deep hover:shadow-[0_14px_30px_-18px_rgba(6,42,32,0.45)] motion-safe:hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+      <Link href={href} className="flex h-full flex-col tile rounded-[10px] border border-line bg-sheet p-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
         <span className="flex items-center justify-between">
           <span aria-hidden="true" className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-primary-dark text-sm font-bold text-white">{number}</span>
           {tag && <Badge>{tag}</Badge>}
         </span>
-        {nameUr && <span lang="ur" dir="rtl" className="urdu mt-3 text-xl font-bold text-ink">{nameUr}</span>}
-        <span className={`${nameUr ? "" : "mt-3 "}block font-semibold text-ink`}>{nameLatin}</span>
-        <span className="mt-auto pt-2 text-sm text-muted">{subtitle}</span>
+        {nameUr && <span lang="ur" dir="rtl" className="urdu tile-gold mt-3 text-2xl font-bold text-ink">{nameUr}</span>}
+        <span className={`${nameUr ? "" : "mt-3 "}tile-ink block font-semibold text-ink`}>{nameLatin}</span>
+        <span className="tile-muted mt-auto pt-2 text-sm text-muted">{subtitle}</span>
       </Link>
     </li>
   );
@@ -45,16 +45,17 @@ export function CourseCard({ href, arabicTitle, premium, eyebrow, title, byline,
   );
 }
 
-/** Subject tile: Arabic or Urdu name in its own script on top, English name and book count below. */
+/** Subject tile: the Arabic or Urdu name large in its own script, English name and book count below; turns emerald on hover. */
 export function SubjectCard({ href, nameNative, nativeLang, nameLatin, subtitle }: {
   href: string; nameNative?: string | null; nativeLang?: "ur" | "ar"; nameLatin: string; subtitle: string;
 }) {
   return (
     <li>
-      <Link href={href} className="flex h-full flex-col rounded-[6px] border border-line bg-sheet p-4 transition-[transform,border-color,box-shadow] duration-200 hover:border-gold-deep hover:shadow-[0_14px_30px_-18px_rgba(6,42,32,0.45)] motion-safe:hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
-        {nameNative && <span lang={nativeLang} dir="rtl" className={`${nativeLang === "ar" ? "arabic-title" : "urdu"} text-xl font-bold text-primary`}>{nameNative}</span>}
-        <span className={`${nameNative ? "" : "mt-1 "}block font-semibold text-ink`}>{nameLatin}</span>
-        <span className="mt-auto pt-2 text-sm text-muted">{subtitle}</span>
+      <Link href={href} className="tile flex h-full min-h-44 flex-col rounded-[10px] border border-line bg-sheet p-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+        <span aria-hidden="true" className="mb-4 h-0.5 w-10 bg-gold" />
+        {nameNative && <span lang={nativeLang} dir="rtl" className={`${nativeLang === "ar" ? "arabic-title" : "urdu"} tile-gold text-4xl font-bold text-primary`}>{nameNative}</span>}
+        <span className="tile-ink font-display mt-1 block text-2xl text-ink">{nameLatin}</span>
+        <span className="tile-muted mt-auto pt-4 text-sm text-muted">{subtitle}</span>
       </Link>
     </li>
   );

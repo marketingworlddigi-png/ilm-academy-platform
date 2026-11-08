@@ -98,7 +98,7 @@ export default async function LessonPage({ params, searchParams }: PageProps<"/[
 
   return (
     <main>
-      <section className="bg-ink text-white star-pattern">
+      <section className="khatam page-hero text-white">
         <div className="mx-auto max-w-6xl px-5 py-8 sm:py-10">
           <Breadcrumbs tone="dark" crumbs={[{ label: "Home", path: href(locale) }, { label: c.title, path: href(locale, base) }, { label: l.title, path: here }]} />
           <h1 className="mt-3 text-2xl font-bold leading-tight sm:text-3xl">{l.title}</h1>

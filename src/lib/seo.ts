@@ -1,5 +1,9 @@
 import { defaultLocale, href, htmlLangOf, type Locale } from "@/lib/i18n/config";
 import { absoluteUrl } from "@/lib/site";
+import { SUBJECTS } from "@/content/subjects";
+import { GUIDES } from "@/content/guides";
+
+const STATIC_PAGES = ["/about", "/darse-nizami", "/how-it-works", "/for-academies", "/subjects", "/guides", "/faq", "/copyright"];
 
 /**
  * Languages whose pages have real, human-reviewed translations. Until Urdu and Arabic copy lands, those routes
@@ -43,6 +47,9 @@ export type SitemapEntry = { path: string; lastModified?: string };
 /** Every public path, once per translated language. Pure so it can be tested without a database. */
 export function buildSitemapPaths(src: SitemapSource): SitemapEntry[] {
   const base: SitemapEntry[] = [{ path: "/" }, { path: "/library" }, { path: "/courses" }, { path: "/pricing" }];
+  for (const p of STATIC_PAGES) base.push({ path: p });
+  for (const s of SUBJECTS) base.push({ path: `/subjects/${s.slug}` });
+  for (const g of GUIDES) base.push({ path: `/guides/${g.slug}` });
   for (const b of src.boards) base.push({ path: `/library/${b.slug}`, lastModified: b.updated_at });
   for (const l of src.levels) base.push({ path: `/library/${l.board_slug}/${l.slug}` });
   for (const s of src.subjectLinks) base.push({ path: `/library/${s.board_slug}/${s.level_slug}/${s.subject_slug}` });
