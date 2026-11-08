@@ -1,8 +1,8 @@
 // The Ilm Academy mark: a mihrab arch holding an open book, with the Urdu name beside the English one.
 // Flat shapes in lapis and gold only. Pass tone="light" on dark backgrounds.
 export function LogoMark({ size = 36, tone = "dark" }: { size?: number; tone?: "dark" | "light" }) {
-  const arch = tone === "light" ? "#fffcf3" : "#0e2152";
-  const book = tone === "light" ? "#0e2152" : "#e3b94d";
+  const arch = tone === "light" ? "#fffcf3" : "#0a3a2c";
+  const book = tone === "light" ? "#0a3a2c" : "#e3b94d";
   return (
     <svg aria-hidden="true" width={size} height={size} viewBox="0 0 40 40" fill="none">
       {/* arch */}

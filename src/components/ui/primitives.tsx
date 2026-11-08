@@ -35,7 +35,7 @@ export function Card({ children, className, as: Tag = "div" }: { children: React
 type Tone = "neutral" | "green" | "gold" | "dark" | "danger";
 const TONE: Record<Tone, string> = {
   neutral: "bg-surface text-muted border border-line",
-  green: "bg-[#e4ebf7] text-primary-dark",
+  green: "bg-[#e0eee6] text-primary-dark",
   gold: "bg-gold text-ink",
   dark: "bg-primary-dark text-white",
   danger: "bg-[#fbe9e9] text-danger",

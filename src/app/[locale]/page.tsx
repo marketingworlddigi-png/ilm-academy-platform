@@ -264,7 +264,7 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
           {plans.map((p) => {
             const best = p.duration_months === 12;
             return (
-              <li key={p.id} className={`relative flex flex-col rounded-[10px] border p-7 ${best ? "khatam gold-border border-primary-dark text-white shadow-[0_40px_80px_-30px_rgba(14,33,82,0.8)] md:-translate-y-3" : "border-line bg-sheet"}`}>
+              <li key={p.id} className={`relative flex flex-col rounded-[10px] border p-7 ${best ? "khatam gold-border border-primary-dark text-white shadow-[0_40px_80px_-30px_rgba(6,42,32,0.8)] md:-translate-y-3" : "border-line bg-sheet"}`}>
                 <div className="flex items-center justify-between gap-2">
                   <h3 className="text-lg font-semibold">{p.name}</h3>
                   {best && saving !== null && <Badge tone="gold">Save ~{saving}%</Badge>}

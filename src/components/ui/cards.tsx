@@ -8,7 +8,7 @@ export function DarjaCard({ href, number, tag, nameUr, nameLatin, subtitle }: {
 }) {
   return (
     <li>
-      <Link href={href} className="flex h-full flex-col rounded-[6px] border border-line bg-sheet p-4 transition-[transform,border-color,box-shadow] duration-200 hover:border-gold-deep hover:shadow-[0_14px_30px_-18px_rgba(14,33,82,0.45)] motion-safe:hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+      <Link href={href} className="flex h-full flex-col rounded-[6px] border border-line bg-sheet p-4 transition-[transform,border-color,box-shadow] duration-200 hover:border-gold-deep hover:shadow-[0_14px_30px_-18px_rgba(6,42,32,0.45)] motion-safe:hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
         <span className="flex items-center justify-between">
           <span aria-hidden="true" className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-primary-dark text-sm font-bold text-white">{number}</span>
           {tag && <Badge>{tag}</Badge>}
@@ -27,7 +27,7 @@ export function CourseCard({ href, arabicTitle, premium, eyebrow, title, byline,
 }) {
   return (
     <li>
-      <Link href={href} className="flex h-full flex-col overflow-hidden rounded-[6px] border border-line bg-sheet transition-[transform,border-color,box-shadow] duration-200 hover:border-gold-deep hover:shadow-[0_14px_30px_-18px_rgba(14,33,82,0.45)] motion-safe:hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+      <Link href={href} className="flex h-full flex-col overflow-hidden rounded-[6px] border border-line bg-sheet transition-[transform,border-color,box-shadow] duration-200 hover:border-gold-deep hover:shadow-[0_14px_30px_-18px_rgba(6,42,32,0.45)] motion-safe:hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
         <span className="khatam relative flex h-24 items-center justify-center overflow-hidden px-4">
           <GeoStar spin="spin-slow" className="absolute -end-6 -top-10 h-36 w-36 opacity-60" />
           {arabicTitle && <span lang="ar" dir="rtl" className="arabic-title relative truncate text-2xl font-bold text-gold">{arabicTitle}</span>}
@@ -51,7 +51,7 @@ export function SubjectCard({ href, nameNative, nativeLang, nameLatin, subtitle 
 }) {
   return (
     <li>
-      <Link href={href} className="flex h-full flex-col rounded-[6px] border border-line bg-sheet p-4 transition-[transform,border-color,box-shadow] duration-200 hover:border-gold-deep hover:shadow-[0_14px_30px_-18px_rgba(14,33,82,0.45)] motion-safe:hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+      <Link href={href} className="flex h-full flex-col rounded-[6px] border border-line bg-sheet p-4 transition-[transform,border-color,box-shadow] duration-200 hover:border-gold-deep hover:shadow-[0_14px_30px_-18px_rgba(6,42,32,0.45)] motion-safe:hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
         {nameNative && <span lang={nativeLang} dir="rtl" className={`${nativeLang === "ar" ? "arabic-title" : "urdu"} text-xl font-bold text-primary`}>{nameNative}</span>}
         <span className={`${nameNative ? "" : "mt-1 "}block font-semibold text-ink`}>{nameLatin}</span>
         <span className="mt-auto pt-2 text-sm text-muted">{subtitle}</span>
